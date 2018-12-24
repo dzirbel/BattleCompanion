@@ -2,6 +2,7 @@ package com.github.dzirbel.battlecompanion.text
 
 import com.github.dzirbel.battlecompanion.core.Army
 import com.github.dzirbel.battlecompanion.core.Board
+import com.github.dzirbel.battlecompanion.core.Outcome
 import com.github.dzirbel.battlecompanion.core.UnitType
 import java.util.concurrent.TimeUnit
 import kotlin.math.log10
@@ -9,6 +10,7 @@ import kotlin.random.Random
 
 private val attackers = Army(
     units = mapOf(
+        UnitType.INFANTRY to 3,
         UnitType.TANK to 1
     ),
     unitPriority = Comparator { u1, u2 -> u1.cost.compareTo(u2.cost) }
@@ -16,12 +18,14 @@ private val attackers = Army(
 
 private val defenders = Army(
     units = mapOf(
-        UnitType.TANK to 1
+        UnitType.INFANTRY to 4
     ),
     unitPriority = Comparator { u1, u2 -> u1.cost.compareTo(u2.cost) }
 )
 
 private const val N = 100_000
+private const val PRINT_EACH_ROUND = false
+private const val PRINT_REMAINING = false
 
 fun main() {
     val rand = Random
@@ -43,13 +47,40 @@ fun main() {
 
     repeat(N) {
         var board = startingBoard
-        while (board.result == null) {
+        var round = 1
+        while (board.outcome == null) {
+            if (PRINT_EACH_ROUND) {
+                println("Round $round:")
+                board.print()
+                println()
+                round++
+            }
+
             board = board.roll(rand)
         }
-        when (board.result) {
-            is Board.Result.AttackersWon -> wins++
-            is Board.Result.DefendersWon -> losses++
-            is Board.Result.Tie -> ties++
+
+        if (PRINT_REMAINING) {
+            val outcome = board.outcome
+            when (outcome) {
+                is Outcome.AttackersWon -> {
+                    println("Attackers won!")
+                    println("Remaining units:")
+                    outcome.remaining.print()
+                }
+                is Outcome.DefendersWon -> {
+                    println("Defenders won!")
+                    println("Remaining units:")
+                    outcome.remaining.print()
+                }
+                is Outcome.Tie -> println("Tie! (all units dead)")
+            }
+            println()
+        }
+
+        when (board.outcome) {
+            is Outcome.AttackersWon -> wins++
+            is Outcome.DefendersWon -> losses++
+            is Outcome.Tie -> ties++
         }
     }
 

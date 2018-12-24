@@ -7,6 +7,7 @@ import kotlin.random.Random
  * Represents one side of a combat board: the [units] (as a map from each [UnitType] to the number of those units in the
  *  army) and [unitPriority] which determines which units to lose as casualties first.
  * Note that [Army]s are immutable.
+ * TODO allow [unitPriority] to be more generic to support user input (i.e. just return the list of casualties)
  */
 data class Army(
     val units: Map<UnitType, Int>,
