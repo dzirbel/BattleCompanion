@@ -3,6 +3,7 @@ package com.github.dzirbel.battlecompanion.core
 // TODO UnitType might not be the best name
 // TODO battleship health
 // TODO techs
+// TODO attacking aa guns can still take hits
 enum class UnitType(
     val domain: Domain,
     val attack: Int,

@@ -16,10 +16,10 @@ data class Board(
 
     fun getOutcome(): Outcome? {
         return when {
-            attackers.totalUnits > 0 && defenders.totalUnits > 0 -> null
-            attackers.totalUnits > 0 && defenders.totalUnits == 0 -> Outcome.AttackerWon(attackers)
-            attackers.totalUnits == 0 && defenders.totalUnits > 0 -> Outcome.DefenderWon(defenders)
-            else -> Outcome.Tie
+            attackers.isEmpty() && defenders.isEmpty() -> Outcome.Tie
+            attackers.isEmpty() && !defenders.isEmpty() -> Outcome.DefenderWon(defenders)
+            !attackers.isEmpty() && defenders.isEmpty() -> Outcome.AttackerWon(attackers)
+            else -> null
         }
     }
 
@@ -29,18 +29,19 @@ data class Board(
 
         // TODO subs opening fire (if no destroyer, then remove them from main combat, etc)
 
-        if (remainingAttackers.units.any { it.key.domain == Domain.AIR } &&
-            remainingDefenders.units.any { it.key == UnitType.ANTIAIRCRAFT_GUN }
+        if (remainingDefenders.units.any { it.key == UnitType.ANTIAIRCRAFT_GUN } &&
+            remainingAttackers.units.any { it.key.domain == Domain.AIR }
         ) {
             // TODO this technically allows multiple aa guns
             val aaHits = remainingDefenders.ofType(UnitType.ANTIAIRCRAFT_GUN).rollHits(rand, isAttacking = false)
             remainingAttackers = remainingAttackers.takeHits(aaHits)
-            remainingDefenders = remainingDefenders.withoutType(UnitType.ANTIAIRCRAFT_GUN)
         }
+        remainingDefenders = remainingDefenders.withoutType(UnitType.ANTIAIRCRAFT_GUN)
 
         if (remainingAttackers.units.any { it.key == UnitType.BATTLESHIP } &&
             remainingDefenders.units.any { it.key.domain == Domain.LAND }
         ) {
+            // TODO bombardment can only hit land units
             val bombardmentHits = remainingAttackers.ofType(UnitType.BATTLESHIP).rollHits(rand, isAttacking = true)
             remainingDefenders = remainingDefenders.takeHits(bombardmentHits)
             remainingAttackers = remainingAttackers.withoutType(UnitType.BATTLESHIP)

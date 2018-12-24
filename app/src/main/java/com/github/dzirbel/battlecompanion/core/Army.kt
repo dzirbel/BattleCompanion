@@ -5,7 +5,9 @@ import kotlin.random.Random
 /**
  * Represents one side of a combat board: the [units] (as a map from each [UnitType] to the number of those units in the
  *  army) and [unitPriority] which determines which units to lose as casualties first.
+ * [Army] has no knowledge of its state in the combat sequence (e.g. whether it is performing opening fire).
  * Note that [Army]s are immutable.
+ *
  * TODO allow [unitPriority] to be more generic to support user input (i.e. just return a list of casualties from hits)
  * TODO add default unit priorities that first compare on cost and then on attack/defense and vice versa
  * TODO try to instantiate all instances of [units] as EnumMaps for performance?
@@ -15,11 +17,9 @@ data class Army(
     val unitPriority: Comparator<UnitType>
 ) {
 
-    /**
-     * The total number of units in this [Army] (including antiaircraft guns, etc).
-     * TODO remove this (possibly replace with isEmpty())
-     */
-    val totalUnits: Int = units.values.sum()
+    fun isEmpty(): Boolean {
+        return units.none { it.value > 0 }
+    }
 
     /**
      * Returns a copy of this [Army] without units of the given [UnitType].
@@ -45,7 +45,7 @@ data class Army(
         units.forEach { (unitType, count) ->
             var remainingCount = count
             if (unitType == UnitType.INFANTRY && supportingArtillery > 0) {
-                val supportedInfantry = Math.min(count, supportingArtillery)
+                val supportedInfantry = Math.min(remainingCount, supportingArtillery)
                 remainingCount -= supportedInfantry
 
                 // TODO replace the constant 2
