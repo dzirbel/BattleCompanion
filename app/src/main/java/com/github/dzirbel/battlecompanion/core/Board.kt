@@ -17,7 +17,7 @@ data class Board(
     val result = when {
         attackers.totalUnits > 0 && defenders.totalUnits > 0 -> null
         attackers.totalUnits > 0 && defenders.totalUnits == 0 -> Result.AttackersWon(attackers)
-        defenders.totalUnits > 0 && attackers.totalUnits == 0 -> Result.DefendersWon(defenders)
+        attackers.totalUnits == 0 && defenders.totalUnits > 0 -> Result.DefendersWon(defenders)
         else -> Result.Tie
     }
 
@@ -31,24 +31,25 @@ data class Board(
 
         // TODO subs opening fire
 
-        val attackingPlanes = remainingAttackers.units.count { it.key.terrain == UnitTerrain.AIR }
-        if (attackingPlanes > 0 && remainingDefenders.units.any { it.key == UnitType.ANTIAIRCRAFT_GUN }) {
-            // TODO use HitProfile for this?
-            val aaHits = rand.rollDice(attackingPlanes).count { it <= UnitType.ANTIAIRCRAFT_GUN.defense }
-            remainingAttackers = remainingAttackers.takeHits(hits = aaHits, terrain = UnitTerrain.AIR)
+        if (remainingAttackers.units.any { it.key.terrain == UnitTerrain.AIR } &&
+            remainingDefenders.units.any { it.key == UnitType.ANTIAIRCRAFT_GUN }
+        ) {
+            // TODO this allows multiple aa guns
+            val aaHits = remainingDefenders.ofType(UnitType.ANTIAIRCRAFT_GUN).computeHits(rand, isAttacking = false)
+            remainingAttackers = remainingAttackers.takeHits(aaHits)
             remainingDefenders = remainingDefenders.withoutType(UnitType.ANTIAIRCRAFT_GUN)
         }
 
-        val attackingBattleships = remainingAttackers.units.count { it.key == UnitType.BATTLESHIP }
-        if (attackingBattleships > 0 && remainingDefenders.units.any { it.key.terrain == UnitTerrain.LAND }) {
-            // TODO use HitProfile for this?
-            val bombardmentHits = rand.rollDice(attackingBattleships).count { it <= UnitType.BATTLESHIP.attack }
-            remainingDefenders = remainingDefenders.takeHits(hits = bombardmentHits, terrain = UnitTerrain.LAND)
+        if (remainingAttackers.units.any { it.key == UnitType.BATTLESHIP } &&
+            remainingDefenders.units.any { it.key.terrain == UnitTerrain.LAND }
+        ) {
+            val bombardmentHits = remainingAttackers.ofType(UnitType.BATTLESHIP).computeHits(rand, isAttacking = true)
+            remainingDefenders = remainingDefenders.takeHits(bombardmentHits)
             remainingAttackers = remainingAttackers.withoutType(UnitType.BATTLESHIP)
         }
 
-        val attackerHits = remainingAttackers.computeHits(rand)
-        val defenderHits = remainingDefenders.computeHits(rand)
+        val attackerHits = remainingAttackers.computeHits(rand, isAttacking = true)
+        val defenderHits = remainingDefenders.computeHits(rand, isAttacking = false)
 
         remainingAttackers = remainingAttackers.takeHits(defenderHits)
         remainingDefenders = remainingDefenders.takeHits(attackerHits)
