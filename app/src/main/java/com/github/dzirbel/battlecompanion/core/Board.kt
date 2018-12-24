@@ -1,6 +1,5 @@
 package com.github.dzirbel.battlecompanion.core
 
-import java.lang.IllegalStateException
 import kotlin.random.Random
 
 data class Board(
@@ -34,28 +33,22 @@ data class Board(
 
         val attackingPlanes = remainingAttackers.units.count { it.key.terrain == UnitTerrain.AIR }
         if (attackingPlanes > 0 && remainingDefenders.units.any { it.key == UnitType.ANTIAIRCRAFT_GUN }) {
-            val aaHits = rand.rollDice(attackingPlanes).count { it <= 1 }
-            remainingAttackers = remainingAttackers.takeHits(
-                hits = aaHits,
-                filter = { it.terrain == UnitTerrain.AIR }
-            )
-            remainingDefenders = remainingDefenders.filter { it != UnitType.ANTIAIRCRAFT_GUN }
+            // TODO use HitProfile for this?
+            val aaHits = rand.rollDice(attackingPlanes).count { it <= UnitType.ANTIAIRCRAFT_GUN.defense }
+            remainingAttackers = remainingAttackers.takeHits(hits = aaHits, terrain = UnitTerrain.AIR)
+            remainingDefenders = remainingDefenders.withoutType(UnitType.ANTIAIRCRAFT_GUN)
         }
 
         val attackingBattleships = remainingAttackers.units.count { it.key == UnitType.BATTLESHIP }
         if (attackingBattleships > 0 && remainingDefenders.units.any { it.key.terrain == UnitTerrain.LAND }) {
+            // TODO use HitProfile for this?
             val bombardmentHits = rand.rollDice(attackingBattleships).count { it <= UnitType.BATTLESHIP.attack }
-            remainingDefenders = remainingDefenders.takeHits(bombardmentHits)
-            remainingAttackers = remainingAttackers.filter { it != UnitType.BATTLESHIP }
+            remainingDefenders = remainingDefenders.takeHits(hits = bombardmentHits, terrain = UnitTerrain.LAND)
+            remainingAttackers = remainingAttackers.withoutType(UnitType.BATTLESHIP)
         }
 
-        val attackerHits = remainingAttackers.units.map { (unit, count) ->
-            rand.rollDice(count).count { it <= unit.attack }
-        }.sum()
-
-        val defenderHits = remainingDefenders.units.map { (unit, count) ->
-            rand.rollDice(count).count { it <= unit.defense }
-        }.sum()
+        val attackerHits = remainingAttackers.computeHits(rand)
+        val defenderHits = remainingDefenders.computeHits(rand)
 
         remainingAttackers = remainingAttackers.takeHits(defenderHits)
         remainingDefenders = remainingDefenders.takeHits(attackerHits)

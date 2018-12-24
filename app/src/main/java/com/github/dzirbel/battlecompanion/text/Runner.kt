@@ -36,7 +36,8 @@ fun main() {
         attackers = attackers,
         defenders = defenders
     )
-    println("Running $N battles for board:")
+    println("Running $N simulations of battle:")
+    println()
     startingBoard.print()
     println()
 
@@ -45,8 +46,7 @@ fun main() {
         while (board.result == null) {
             board = board.roll(rand)
         }
-        val result = board.result ?: throw IllegalStateException()
-        when (result) {
+        when (board.result) {
             is Board.Result.AttackersWon -> wins++
             is Board.Result.DefendersWon -> losses++
             is Board.Result.Tie -> ties++

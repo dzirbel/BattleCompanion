@@ -5,13 +5,12 @@ enum class UnitTerrain { LAND, SEA, AIR }
 // TODO artillery boosted infantry
 // TODO battleship health
 // TODO techs
-// TODO subs can't hit planes
 enum class UnitType(
     val terrain: UnitTerrain,
     val attack: Int,
     val defense: Int,
     val cost: Int,
-    val hitRestrictions: (UnitType) -> Boolean = { true }
+    val specificTerrain: UnitTerrain? = null
 ) {
 
     INFANTRY(terrain = UnitTerrain.LAND, attack = 1, defense = 2, cost = 3),
@@ -20,9 +19,9 @@ enum class UnitType(
     ANTIAIRCRAFT_GUN(
         terrain = UnitTerrain.LAND,
         attack = 0,
-        defense = 0,
+        defense = 1,
         cost = 5,
-        hitRestrictions = { it.terrain == UnitTerrain.AIR }
+        specificTerrain = UnitTerrain.AIR
     ),
 
     FIGHTER(terrain = UnitTerrain.AIR, attack = 3, defense = 4, cost = 10),
@@ -34,7 +33,7 @@ enum class UnitType(
         attack = 2,
         defense = 2,
         cost = 8,
-        hitRestrictions = { it.terrain != UnitTerrain.AIR }
+        specificTerrain = UnitTerrain.SEA
     ),
     DESTROYER(terrain = UnitTerrain.SEA, attack = 3, defense = 3, cost = 12),
     AIRCRAFT_CARRIER(terrain = UnitTerrain.SEA, attack = 1, defense = 3, cost = 16),
