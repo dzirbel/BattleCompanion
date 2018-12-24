@@ -18,7 +18,8 @@ private val attackers = Army(
 
 private val defenders = Army(
     units = mapOf(
-        UnitType.INFANTRY to 2
+        UnitType.INFANTRY to 2,
+        UnitType.ANTIAIRCRAFT_GUN to 1
     ),
     unitPriority = Comparator { u1, u2 -> u1.cost.compareTo(u2.cost) }
 )
