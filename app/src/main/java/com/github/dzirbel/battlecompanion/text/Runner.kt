@@ -48,7 +48,7 @@ fun main() {
     repeat(N) {
         var board = startingBoard
         var round = 1
-        while (board.outcome == null) {
+        while (board.getOutcome() == null) {
             if (PRINT_EACH_ROUND) {
                 println("Round $round:")
                 board.print()
@@ -60,16 +60,14 @@ fun main() {
         }
 
         if (PRINT_REMAINING) {
-            val outcome = board.outcome
+            val outcome = board.getOutcome()
             when (outcome) {
-                is Outcome.AttackersWon -> {
-                    println("Attackers won!")
-                    println("Remaining units:")
+                is Outcome.AttackerWon -> {
+                    println("Attacker won! Remaining units:")
                     outcome.remaining.print()
                 }
-                is Outcome.DefendersWon -> {
-                    println("Defenders won!")
-                    println("Remaining units:")
+                is Outcome.DefenderWon -> {
+                    println("Defender won! Remaining units:")
                     outcome.remaining.print()
                 }
                 is Outcome.Tie -> println("Tie! (all units dead)")
@@ -77,9 +75,9 @@ fun main() {
             println()
         }
 
-        when (board.outcome) {
-            is Outcome.AttackersWon -> wins++
-            is Outcome.DefendersWon -> losses++
+        when (board.getOutcome()) {
+            is Outcome.AttackerWon -> wins++
+            is Outcome.DefenderWon -> losses++
             is Outcome.Tie -> ties++
         }
     }

@@ -1,13 +1,14 @@
 package com.github.dzirbel.battlecompanion.core
 
-import java.util.EnumMap
 import kotlin.random.Random
 
 /**
  * Represents one side of a combat board: the [units] (as a map from each [UnitType] to the number of those units in the
  *  army) and [unitPriority] which determines which units to lose as casualties first.
  * Note that [Army]s are immutable.
- * TODO allow [unitPriority] to be more generic to support user input (i.e. just return the list of casualties)
+ * TODO allow [unitPriority] to be more generic to support user input (i.e. just return a list of casualties from hits)
+ * TODO add default unit priorities that first compare on cost and then on attack/defense and vice versa
+ * TODO try to instantiate all instances of [units] as EnumMaps for performance?
  */
 data class Army(
     val units: Map<UnitType, Int>,
@@ -15,17 +16,8 @@ data class Army(
 ) {
 
     /**
-     * In order to have terrain-specific hits (such as submarines only hitting sea units), the profile of a round of
-     *  hits is more complicated than simply the total number of hits.
-     * [allTerrainHits] is the number of hits which can be applied to all [UnitTerrain]s; [terrainHits] is a map from
-     *  each [UnitTerrain] to the number of hits which must be applied to that [UnitTerrain] (missing keys are allowed
-     *  and represent zero terrain-specific hits).
-     * Battle correctness dictates that terrain-specific hits must be applied before terrain-agnostic hits.
-     */
-    data class HitProfile(val allTerrainHits: Int, val terrainHits: Map<UnitTerrain, Int>)
-
-    /**
      * The total number of units in this [Army] (including antiaircraft guns, etc).
+     * TODO remove this (possibly replace with isEmpty())
      */
     val totalUnits: Int = units.values.sum()
 
@@ -46,50 +38,52 @@ data class Army(
     /**
      * Computes the [HitProfile] that this [Army] inflicts in a single round, rolling with the given [Random].
      */
-    fun computeHits(rand: Random, isAttacking: Boolean): HitProfile {
-        var allHits = 0
-        val terrainHits = EnumMap<UnitTerrain, Int>(UnitTerrain::class.java)
-        var remainingArtillery = if (isAttacking) units.count { it.key == UnitType.ARTILLERY } else 0
+    fun rollHits(rand: Random, isAttacking: Boolean): HitProfile {
+        var hits: HitProfile = mapOf()
+        val supportingArtillery = if (isAttacking) units.count { it.key == UnitType.ARTILLERY } else 0
 
         units.forEach { (unitType, count) ->
-            val rollLimit = when {
-                remainingArtillery > 0 && unitType == UnitType.INFANTRY -> {
-                    remainingArtillery--
-                    UnitType.ARTILLERY.attack
-                }
-                isAttacking -> unitType.attack
-                else -> unitType.defense
+            var remainingCount = count
+            if (unitType == UnitType.INFANTRY && supportingArtillery > 0) {
+                val supportedInfantry = Math.min(count, supportingArtillery)
+                remainingCount -= supportedInfantry
+
+                // TODO replace the constant 2
+                hits = hits.plusHits(unitType.targetDomain, rand.rollDice(count).count { it <= 2 })
             }
-            val hits = rand.rollDice(count).count { it <= rollLimit }
-            if (hits > 0) {
-                if (unitType.specificTerrain == null) {
-                    allHits += hits
-                } else {
-                    terrainHits[unitType.specificTerrain] = (terrainHits[unitType.specificTerrain] ?: 0) + hits
-                }
-            }
+
+            val rollLimit = if (isAttacking) unitType.attack else unitType.defense
+            hits = hits.plusHits(unitType.targetDomain, rand.rollDice(remainingCount).count { it <= rollLimit })
         }
 
-        return HitProfile(allTerrainHits = allHits, terrainHits = terrainHits)
+        return hits
     }
 
     /**
      * Returns a copy of this [Army] with the given [HitProfile] inflicted.
+     * TODO doing this all in one step might be better for performance/cleaner
      */
-    fun takeHits(hitProfile: HitProfile): Army {
+    fun takeHits(hits: HitProfile): Army {
         var remainingArmy = this
-        hitProfile.terrainHits.forEach { (terrain, hits) ->
-            remainingArmy = remainingArmy.takeHits(hits = hits, terrain = terrain)
+        hits.filterKeys { it != null }.forEach { (domain, count) ->
+            remainingArmy = remainingArmy.takeHits(count, domain)
         }
-        return remainingArmy.takeHits(hitProfile.allTerrainHits)
+
+        remainingArmy = remainingArmy.takeHits(hits[null] ?: 0)
+
+        return remainingArmy
     }
 
-    private fun takeHits(hits: Int, terrain: UnitTerrain? = null): Army {
+    private fun takeHits(hits: Int, domain: Domain? = null): Army {
+        if (hits == 0) {
+            return this
+        }
+
         var remainingHits = hits
         return copy(
             units = units.keys
-                .filter { it != UnitType.ANTIAIRCRAFT_GUN }
-                .filter { terrain == null || it.terrain == terrain }
+                .filter { it != UnitType.ANTIAIRCRAFT_GUN } // TODO generalize immune units?
+                .filter { domain == null || it.domain == domain }
                 .sortedWith(unitPriority)
                 .map { unitType: UnitType ->
                     val count = units[unitType] ?: throw IllegalStateException()
