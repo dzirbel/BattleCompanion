@@ -40,5 +40,7 @@ enum class UnitType(
     ),
     DESTROYER(domain = Domain.SEA, attack = 3, defense = 3, cost = 12),
     AIRCRAFT_CARRIER(domain = Domain.SEA, attack = 1, defense = 3, cost = 16),
-    BATTLESHIP(domain = Domain.SEA, attack = 4, defense = 4, cost = 24)
+    BATTLESHIP(domain = Domain.SEA, attack = 4, defense = 4, cost = 24);
+
+    val prettyName = name.split("\\w+").joinToString(separator = " ", transform = { it.toLowerCase().capitalize() })
 }

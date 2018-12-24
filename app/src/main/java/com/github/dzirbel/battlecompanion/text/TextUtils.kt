@@ -19,6 +19,6 @@ fun Board.print() {
 
 fun Army.print() {
     units.filter { it.value > 0 }.forEach { (unitType, count) ->
-        println(" ${unitType.name.toLowerCase().capitalize()} : $count")
+        println(" ${unitType.prettyName} : $count")
     }
 }
