@@ -10,15 +10,15 @@ import kotlin.random.Random
 
 private val attackers = Army(
     units = mapOf(
-        UnitType.INFANTRY to 3,
-        UnitType.TANK to 1
+        UnitType.INFANTRY to 1,
+        UnitType.ARTILLERY to 1
     ),
     unitPriority = Comparator { u1, u2 -> u1.cost.compareTo(u2.cost) }
 )
 
 private val defenders = Army(
     units = mapOf(
-        UnitType.INFANTRY to 4
+        UnitType.INFANTRY to 2
     ),
     unitPriority = Comparator { u1, u2 -> u1.cost.compareTo(u2.cost) }
 )

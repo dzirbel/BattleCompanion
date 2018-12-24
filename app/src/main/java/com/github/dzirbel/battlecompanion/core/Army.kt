@@ -49,9 +49,18 @@ data class Army(
     fun computeHits(rand: Random, isAttacking: Boolean): HitProfile {
         var allHits = 0
         val terrainHits = EnumMap<UnitTerrain, Int>(UnitTerrain::class.java)
+        var remainingArtillery = if (isAttacking) units.count { it.key == UnitType.ARTILLERY } else 0
 
         units.forEach { (unitType, count) ->
-            val hits = rand.rollDice(count).count { it <= if (isAttacking) unitType.attack else unitType.defense }
+            val rollLimit = when {
+                remainingArtillery > 0 && unitType == UnitType.INFANTRY -> {
+                    remainingArtillery--
+                    UnitType.ARTILLERY.attack
+                }
+                isAttacking -> unitType.attack
+                else -> unitType.defense
+            }
+            val hits = rand.rollDice(count).count { it <= rollLimit }
             if (hits > 0) {
                 if (unitType.specificTerrain == null) {
                     allHits += hits

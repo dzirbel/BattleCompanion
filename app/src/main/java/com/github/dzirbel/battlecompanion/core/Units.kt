@@ -2,7 +2,6 @@ package com.github.dzirbel.battlecompanion.core
 
 enum class UnitTerrain { LAND, SEA, AIR }
 
-// TODO artillery boosted infantry
 // TODO battleship health
 // TODO techs
 enum class UnitType(
