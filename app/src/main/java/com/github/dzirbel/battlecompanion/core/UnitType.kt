@@ -44,4 +44,22 @@ enum class UnitType(
     BATTLESHIP(domain = Domain.SEA, attack = 4, defense = 4, cost = 24);
 
     val prettyName = name.split("_").joinToString(separator = " ", transform = { it.toLowerCase().capitalize() })
+
+    /**
+     * Determines whether this [UnitType] should fire during the opening fire round for the given [Board].
+     */
+    fun hasOpeningFire(board: Board, isAttacking: Boolean): Boolean {
+        return when (this) {
+            ANTIAIRCRAFT_GUN -> !isAttacking
+            BATTLESHIP -> isAttacking && board.isAmphibiousAssault()
+            SUBMARINE -> {
+                if (isAttacking) {
+                    board.defenders.units.none { it.key == DESTROYER }
+                } else {
+                    board.attackers.units.none { it.key == DESTROYER }
+                }
+            }
+            else -> false
+        }
+    }
 }

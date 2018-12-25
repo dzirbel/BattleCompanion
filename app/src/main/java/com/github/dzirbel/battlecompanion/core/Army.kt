@@ -29,10 +29,17 @@ data class Army(
     }
 
     /**
-     * Returns a copy of this [Army] with only units of the given [UnitType].
+     * Returns a copy of this [Army] including only the [UnitType]s which have opening fire on the given [Board].
      */
-    fun ofType(unitType: UnitType): Army {
-        return copy(units = mapOf(unitType to (units[unitType] ?: 0)))
+    fun withOpeningFire(board: Board, isAttacking: Boolean): Army {
+        return copy(units = units.filterKeys { it.hasOpeningFire(board = board, isAttacking = isAttacking) })
+    }
+
+    /**
+     * Returns a copy of this [Army] including only the [UnitType]s which do not have opening fire on the given [Board].
+     */
+    fun withoutOpeningFire(board: Board, isAttacking: Boolean): Army {
+        return copy(units = units.filterKeys { !it.hasOpeningFire(board = board, isAttacking = isAttacking) })
     }
 
     /**
