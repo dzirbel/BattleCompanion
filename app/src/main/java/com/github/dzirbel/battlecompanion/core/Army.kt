@@ -56,7 +56,7 @@ data class Army(
                 remainingCount -= supportedInfantry
 
                 // TODO replace the constant 2
-                hits = hits.plusHits(unitType.targetDomain, rand.rollDice(count).count { it <= 2 })
+                hits = hits.plusHits(unitType.targetDomain, rand.rollDice(supportedInfantry).count { it <= 2 })
             }
 
             val rollLimit = if (isAttacking) unitType.attack else unitType.defense
