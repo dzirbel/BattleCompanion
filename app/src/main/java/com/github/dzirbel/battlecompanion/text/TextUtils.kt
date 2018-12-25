@@ -11,10 +11,19 @@ fun Double.formatPercent(): String = PERCENT_FORMAT.format(this)
 fun Int.format(chars: Int) = String.format("%0${chars}d", this)
 
 fun Board.print() {
-    println("Attackers:")
-    attackers.print()
-    println("Defenders:")
-    defenders.print()
+    if (attackers.isEmpty() && defenders.isEmpty()) {
+        println("Empty board")
+    }
+
+    if (!attackers.isEmpty()) {
+        println("Attackers:")
+        attackers.print()
+    }
+
+    if (!defenders.isEmpty()) {
+        println("Defenders:")
+        defenders.print()
+    }
 }
 
 fun Army.print() {
