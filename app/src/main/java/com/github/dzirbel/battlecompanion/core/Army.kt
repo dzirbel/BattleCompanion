@@ -82,12 +82,13 @@ data class Army(
         var remainingHits = hits
         return copy(
             units = units.keys
-                .filter { it != UnitType.ANTIAIRCRAFT_GUN } // TODO generalize immune units?
-                .filter { domain == null || it.domain == domain }
-                .sortedWith(unitPriority)
+                .sortedWith(unitPriority)   // TODO keep the units sorted by unitPriority always?
                 .map { unitType: UnitType ->
                     val count = units[unitType] ?: throw IllegalStateException()
-                    val casualties = Math.min(count, remainingHits)
+                    val casualties = Math.min(count, remainingHits).takeIf {
+                        // TODO generalize immune units?
+                        unitType != UnitType.ANTIAIRCRAFT_GUN && (domain == null || unitType.domain == domain)
+                    } ?: 0
                     remainingHits -= casualties
                     Pair(unitType, count - casualties)
                 }
