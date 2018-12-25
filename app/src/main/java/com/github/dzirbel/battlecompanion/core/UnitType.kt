@@ -68,9 +68,9 @@ enum class UnitType(
             BOMBARDING_BATTLESHIP -> true
             SUBMARINE -> {
                 if (isAttacking) {
-                    board.defenders.units.none { it.key == DESTROYER }
+                    (board.defenders.units[DESTROYER] ?: 0) > 0
                 } else {
-                    board.attackers.units.none { it.key == DESTROYER }
+                    (board.attackers.units[DESTROYER] ?: 0) > 0
                 }
             }
             else -> false
