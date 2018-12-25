@@ -57,8 +57,18 @@ data class Board(
     private fun runRound(rand: Random, isOpeningFire: Boolean): Board {
         // note that both attacker and defender hits must be rolled before taking casualties on either side to ensure
         // they are done in parallel
-        val attackerHits = attackers.rollHits(rand, enemies = defenders, isAttacking = true, isOpeningFire = isOpeningFire)
-        val defenderHits = defenders.rollHits(rand, enemies = attackers, isAttacking = false, isOpeningFire = isOpeningFire)
+        val attackerHits = attackers.rollHits(
+            rand = rand,
+            enemies = defenders,
+            isAttacking = true,
+            isOpeningFire = isOpeningFire
+        )
+        val defenderHits = defenders.rollHits(
+            rand = rand,
+            enemies = attackers,
+            isAttacking = false,
+            isOpeningFire = isOpeningFire
+        )
 
         return Board(
             attackers = attackers.takeHits(defenderHits),
