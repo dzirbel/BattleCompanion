@@ -116,30 +116,33 @@ data class Army(
             units = units
                 // first take hits on all units that have more than 1 hp
                 .mapValues { (unitType, hpList) ->
-                    if (unitType == UnitType.ANTIAIRCRAFT_GUN || (domain != null && unitType.domain != domain)) {
-                        hpList
-                    } else {
-                        hpList.map { hp ->
-                            var remainingHp = hp
-                            // TODO use min here rather than a loop like below
-                            while (remainingHp > 1) {
-                                remainingHp--
-                                remainingHits--
+                    when {
+                        unitType == UnitType.ANTIAIRCRAFT_GUN || unitType == UnitType.BOMBARDING_BATTLESHIP -> hpList
+                        domain != null && unitType.domain != domain -> hpList
+                        remainingHits == 0 -> hpList
+                        hpList.all { it == 1 } -> hpList
+                        else -> {
+                            hpList.map { hp ->
+                                val hitsTaken = Math.min(hp - 1, remainingHits)
+                                remainingHits -= hitsTaken
+                                hp - hitsTaken
                             }
-                            remainingHp
                         }
                     }
                 }
                 .toSortedMap(unitPriority)  // TODO always have units sorted by unitPriority?
                 .mapValues { (unitType, hpList) ->
-                    // TODO prevent bombarding battleships from being casualties and generalize
-                    if (unitType == UnitType.ANTIAIRCRAFT_GUN || (domain != null && unitType.domain != domain)) {
-                        hpList
-                    } else {
-                        // TODO assert that hpList only has 1s?
-                        val casualties = Math.min(hpList.size, remainingHits)
-                        remainingHits -= casualties
-                        hpList.drop(casualties)
+                    when {
+                        // TODO generalize
+                        unitType == UnitType.ANTIAIRCRAFT_GUN || unitType == UnitType.BOMBARDING_BATTLESHIP -> hpList
+                        domain != null && unitType.domain != domain -> hpList
+                        remainingHits == 0 -> hpList
+                        else -> {
+                            // TODO assert that hpList only has 1s?
+                            val casualties = Math.min(hpList.size, remainingHits)
+                            remainingHits -= casualties
+                            hpList.drop(casualties)
+                        }
                     }
                 }
                 .filterValues { it.isNotEmpty() }
