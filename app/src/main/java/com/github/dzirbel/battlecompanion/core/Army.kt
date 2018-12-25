@@ -22,10 +22,11 @@ data class Army(
     }
 
     /**
-     * Returns a copy of this [Army] without units of the given [UnitType].
+     * Returns a copy of this [Army] without units that only fire during the opening round, as per
+     *  [UnitType.firstRoundOnly].
      */
-    fun withoutType(unitType: UnitType): Army {
-        return copy(units = units.filterKeys { it != unitType })
+    fun withoutFirstRoundOnlyUnits(): Army {
+        return copy(units = units.filterKeys { !it.firstRoundOnly })
     }
 
     /**

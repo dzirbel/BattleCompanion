@@ -4,13 +4,17 @@ package com.github.dzirbel.battlecompanion.core
 // TODO battleship health
 // TODO techs
 // TODO attacking aa guns can take hits
-// TODO bombarding battleships should only be able to hit land units
 // TODO multiple defending aa guns
 enum class UnitType(
     val domain: Domain,
     val attack: Int,
     val defense: Int,
     val cost: Int,
+
+    /**
+     * Whether this [UnitType] participates only in the first round of combat, after which it should be removed.
+     */
+    val firstRoundOnly: Boolean = false,
 
     /**
      * Specifies a [Domain] which this [UnitType] can only hit, e.g. [SUBMARINE]s can only hit [Domain.SEA].
@@ -27,7 +31,16 @@ enum class UnitType(
         attack = 0,
         defense = 1,
         cost = 5,
+        firstRoundOnly = true,
         targetDomain = Domain.AIR
+    ),
+    BOMBARDING_BATTLESHIP(
+        domain = Domain.LAND,
+        attack = 4,
+        defense = 0,
+        cost = 24,
+        firstRoundOnly = true,
+        targetDomain = Domain.LAND
     ),
 
     FIGHTER(domain = Domain.AIR, attack = 3, defense = 4, cost = 10),
@@ -52,8 +65,8 @@ enum class UnitType(
      */
     fun hasOpeningFire(board: Board, isAttacking: Boolean): Boolean {
         return when (this) {
-            ANTIAIRCRAFT_GUN -> !isAttacking
-            BATTLESHIP -> isAttacking && board.isAmphibiousAssault()
+            ANTIAIRCRAFT_GUN -> true
+            BOMBARDING_BATTLESHIP -> true
             SUBMARINE -> {
                 if (isAttacking) {
                     board.defenders.units.none { it.key == DESTROYER }
