@@ -3,22 +3,44 @@ package com.github.dzirbel.battlecompanion.core
 import kotlin.random.Random
 
 /**
- * Represents one side of a combat board: the [units] (as a map from each [UnitType] to the number of those units in the
- *  army) and [unitPriority] which determines which units to lose as casualties first.
+ * Represents one side of a combat board: the [units] (a map from each [UnitType] to a list of the hp's of each unit of
+ *  that type; zero is not allowed) and [unitPriority] which determines which units to lose as casualties first.
  * [Army] has no knowledge of its state in the combat sequence (e.g. whether it is performing opening fire).
  * Note that [Army]s are immutable.
  *
+ * TODO guarantee that [units] has no [UnitType]s with no units (i.e. empty hp list) and remove [isEmpty]
  * TODO allow [unitPriority] to be more generic to support user input (i.e. just return a list of casualties from hits)
  * TODO add default unit priorities that first compare on cost and then on attack/defense and vice versa
  * TODO try to instantiate all instances of [units] as EnumMaps for performance?
  */
 data class Army(
-    val units: Map<UnitType, Int>,
+    val units: Map<UnitType, List<Int>>,
     val unitPriority: Comparator<UnitType>
 ) {
 
+    companion object {
+
+        /**
+         * Returns an [Army] with the given [unitPriority] and [units] as a map from the [UnitType] to the number of
+         *  units, all initialized to their respective [UnitType.maxHp].
+         */
+        fun fromMap(unitPriority: Comparator<UnitType>, units: Map<UnitType, Int>): Army {
+            return Army(
+                units = units.mapValues { (unitType, count) -> List(count) { unitType.maxHp } },
+                unitPriority = unitPriority
+            )
+        }
+    }
+
+    /**
+     * Computes the total number of units of the given [UnitType], at all health levels.
+     */
+    fun countOfType(unitType: UnitType): Int {
+        return units[unitType]?.count() ?: 0
+    }
+
     fun isEmpty(): Boolean {
-        return units.none { it.value > 0 }
+        return units.all { it.value.isEmpty() }
     }
 
     /**
@@ -50,8 +72,8 @@ data class Army(
         var hits: HitProfile = mapOf()
         val supportingArtillery = if (isAttacking) units.count { it.key == UnitType.ARTILLERY } else 0
 
-        units.forEach { (unitType, count) ->
-            var remainingCount = count
+        units.forEach { (unitType, hpList) ->
+            var remainingCount = hpList.count()
             if (unitType == UnitType.INFANTRY && supportingArtillery > 0) {
                 val supportedInfantry = Math.min(remainingCount, supportingArtillery)
                 remainingCount -= supportedInfantry
@@ -88,20 +110,38 @@ data class Army(
         }
 
         var remainingHits = hits
+
         return copy(
-            units = units.keys
-                .sortedWith(unitPriority)   // TODO keep the units sorted by unitPriority always?
-                .map { unitType: UnitType ->
-                    val count = units[unitType] ?: throw IllegalStateException()
-                    val casualties = Math.min(count, remainingHits).takeIf {
-                        // TODO generalize immune units?
-                        unitType != UnitType.ANTIAIRCRAFT_GUN && (domain == null || unitType.domain == domain)
-                    } ?: 0
-                    remainingHits -= casualties
-                    Pair(unitType, count - casualties)
+            units = units
+                // first take hits on all units that have more than 1 hp
+                .mapValues { (unitType, hpList) ->
+                    if (unitType == UnitType.ANTIAIRCRAFT_GUN || (domain != null && unitType.domain != domain)) {
+                        hpList
+                    } else {
+                        hpList.map { hp ->
+                            var remainingHp = hp
+                            // TODO use min here rather than a loop like below
+                            while (remainingHp > 1) {
+                                remainingHp--
+                                remainingHits--
+                            }
+                            remainingHp
+                        }
+                    }
                 }
-                .toMap()
-                .filter { it.value > 0 }
+                .toSortedMap(unitPriority)  // TODO always have units sorted by unitPriority?
+                .mapValues { (unitType, hpList) ->
+                    // TODO prevent bombarding battleships from being casualties and generalize
+                    if (unitType == UnitType.ANTIAIRCRAFT_GUN || (domain != null && unitType.domain != domain)) {
+                        hpList
+                    } else {
+                        // TODO assert that hpList only has 1s?
+                        val casualties = Math.min(hpList.size, remainingHits)
+                        remainingHits -= casualties
+                        hpList.drop(casualties)
+                    }
+                }
+                .filterValues { it.isNotEmpty() }
         )
     }
 }

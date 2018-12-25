@@ -1,6 +1,5 @@
 package com.github.dzirbel.battlecompanion.core
 
-// TODO battleship health
 // TODO techs
 // TODO attacking aa guns can never be destroyed
 // TODO multiple defending aa guns
@@ -9,6 +8,11 @@ enum class UnitType(
     val attack: Int,
     val defense: Int,
     val cost: Int,
+
+    /**
+     * The maximum number of hits this [UnitType] can sustain, typically 1 (default).
+     */
+    val maxHp: Int = 1,
 
     /**
      * Whether this [UnitType] participates only in the first round of combat, after which it should be removed.
@@ -55,7 +59,7 @@ enum class UnitType(
     ),
     DESTROYER(domain = Domain.SEA, attack = 3, defense = 3, cost = 12),
     AIRCRAFT_CARRIER(domain = Domain.SEA, attack = 1, defense = 3, cost = 16),
-    BATTLESHIP(domain = Domain.SEA, attack = 4, defense = 4, cost = 24);
+    BATTLESHIP(domain = Domain.SEA, attack = 4, defense = 4, cost = 24, maxHp = 2);
 
     val prettyName = name.split("_").joinToString(separator = " ", transform = { it.toLowerCase().capitalize() })
 
@@ -67,11 +71,8 @@ enum class UnitType(
             ANTIAIRCRAFT_GUN -> true
             BOMBARDING_BATTLESHIP -> true
             SUBMARINE -> {
-                if (isAttacking) {
-                    (board.defenders.units[DESTROYER] ?: 0) > 0
-                } else {
-                    (board.attackers.units[DESTROYER] ?: 0) > 0
-                }
+                val enemies = if (isAttacking) board.defenders else board.attackers
+                enemies.countOfType(DESTROYER) > 0
             }
             else -> false
         }

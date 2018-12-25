@@ -27,7 +27,7 @@ fun Board.print() {
 }
 
 fun Army.print() {
-    units.filter { it.value > 0 }.forEach { (unitType, count) ->
-        println(" ${unitType.prettyName} : $count")
+    units.forEach { (unitType, hpList) ->
+        println(" ${unitType.prettyName} : ${hpList.count()} | $hpList")
     }
 }

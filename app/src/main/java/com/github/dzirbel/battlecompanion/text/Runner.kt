@@ -8,19 +8,19 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.log10
 import kotlin.random.Random
 
-private val attackers = Army(
+private val attackers = Army.fromMap(
+    unitPriority = Comparator { u1, u2 -> u1.cost.compareTo(u2.cost) },
     units = mapOf(
         UnitType.INFANTRY to 1,
         UnitType.TANK to 1
-    ),
-    unitPriority = Comparator { u1, u2 -> u1.cost.compareTo(u2.cost) }
+    )
 )
 
-private val defenders = Army(
+private val defenders = Army.fromMap(
+    unitPriority = Comparator { u1, u2 -> u1.cost.compareTo(u2.cost) },
     units = mapOf(
         UnitType.INFANTRY to 2
-    ),
-    unitPriority = Comparator { u1, u2 -> u1.cost.compareTo(u2.cost) }
+    )
 )
 
 private const val N = 100_000
