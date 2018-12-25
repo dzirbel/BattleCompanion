@@ -1,7 +1,6 @@
 package com.github.dzirbel.battlecompanion.core
 
 // TODO techs
-// TODO aa guns only fire once (not once per air unit)
 // TODO attacking aa guns can never be destroyed
 // TODO multiple defending aa guns
 // TODO don't allow defending bombarding battleships (although they technically work?)
@@ -66,16 +65,23 @@ enum class UnitType(
     val prettyName = name.split("_").joinToString(separator = " ", transform = { it.toLowerCase().capitalize() })
 
     /**
-     * Determines whether this [UnitType] should fire during the opening fire round for the given [Board].
+     * Determines the number of dice this unit should throw each round against the given [Army].
      */
-    fun hasOpeningFire(board: Board, isAttacking: Boolean): Boolean {
+    fun numberOfRolls(enemies: Army): Int {
+        return when (this) {
+            ANTIAIRCRAFT_GUN -> enemies.countBy { it.domain == Domain.AIR }
+            else -> 1
+        }
+    }
+
+    /**
+     * Determines whether this [UnitType] should fire during the opening fire round against the given [Army].
+     */
+    fun hasOpeningFire(enemies: Army): Boolean {
         return when (this) {
             ANTIAIRCRAFT_GUN -> true
             BOMBARDING_BATTLESHIP -> true
-            SUBMARINE -> {
-                val enemies = if (isAttacking) board.defenders else board.attackers
-                enemies.countOfType(DESTROYER) > 0
-            }
+            SUBMARINE -> enemies.countBy { it == DESTROYER } == 0
             else -> false
         }
     }

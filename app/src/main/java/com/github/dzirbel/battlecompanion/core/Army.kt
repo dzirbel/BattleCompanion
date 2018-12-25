@@ -34,10 +34,10 @@ data class Army(
     }
 
     /**
-     * Computes the total number of units of the given [UnitType], at all health levels.
+     * Returns the total number of [UnitType]s (of any hp) in this [Army] satisfying the given [predicate].
      */
-    fun countOfType(unitType: UnitType): Int {
-        return units[unitType]?.count() ?: 0
+    fun countBy(predicate: (UnitType) -> Boolean): Int {
+        return units.filterKeys(predicate).values.sumBy { it.size }
     }
 
     fun isEmpty(): Boolean {
@@ -53,39 +53,31 @@ data class Army(
     }
 
     /**
-     * Returns a copy of this [Army] including only the [UnitType]s which have opening fire on the given [Board].
-     */
-    fun withOpeningFire(board: Board, isAttacking: Boolean): Army {
-        return copy(units = units.filterKeys { it.hasOpeningFire(board = board, isAttacking = isAttacking) })
-    }
-
-    /**
-     * Returns a copy of this [Army] including only the [UnitType]s which do not have opening fire on the given [Board].
-     */
-    fun withoutOpeningFire(board: Board, isAttacking: Boolean): Army {
-        return copy(units = units.filterKeys { !it.hasOpeningFire(board = board, isAttacking = isAttacking) })
-    }
-
-    /**
      * Computes the [HitProfile] that this [Army] inflicts in a single round, rolling with the given [Random].
      */
-    fun rollHits(rand: Random, isAttacking: Boolean): HitProfile {
+    fun rollHits(rand: Random, enemies: Army, isAttacking: Boolean, isOpeningFire: Boolean): HitProfile {
         var hits: HitProfile = mapOf()
         val supportingArtillery = if (isAttacking) units.count { it.key == UnitType.ARTILLERY } else 0
 
-        units.forEach { (unitType, hpList) ->
-            var remainingCount = hpList.count()
-            if (unitType == UnitType.INFANTRY && supportingArtillery > 0) {
-                val supportedInfantry = Math.min(remainingCount, supportingArtillery)
-                remainingCount -= supportedInfantry
+        units
+            .filterKeys { it.hasOpeningFire(enemies = enemies) == isOpeningFire }
+            .forEach { (unitType, hpList) ->
+                var remainingCount = hpList.count()
+                if (unitType == UnitType.INFANTRY && supportingArtillery > 0) {
+                    val supportedInfantry = Math.min(remainingCount, supportingArtillery)
+                    remainingCount -= supportedInfantry
 
-                // TODO replace the constant 2
-                hits = hits.plusHits(unitType.targetDomain, rand.rollDice(supportedInfantry).count { it <= 2 })
+                    // TODO replace the constant 2
+                    val rollLimit = 2
+                    val rolls = supportedInfantry * unitType.numberOfRolls(enemies = enemies)
+                    hits = hits.plusHits(unitType.targetDomain, rand.rollDice(rolls).count { it <= rollLimit })
+                }
+
+                // TODO generalize to a function?
+                val rollLimit = if (isAttacking) unitType.attack else unitType.defense
+                val rolls = remainingCount * unitType.numberOfRolls(enemies = enemies)
+                hits = hits.plusHits(unitType.targetDomain, rand.rollDice(rolls).count { it <= rollLimit })
             }
-
-            val rollLimit = if (isAttacking) unitType.attack else unitType.defense
-            hits = hits.plusHits(unitType.targetDomain, rand.rollDice(remainingCount).count { it <= rollLimit })
-        }
 
         return hits
     }
