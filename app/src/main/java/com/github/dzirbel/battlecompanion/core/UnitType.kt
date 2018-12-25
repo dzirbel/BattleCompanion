@@ -1,9 +1,8 @@
 package com.github.dzirbel.battlecompanion.core
 
-// TODO UnitType might not be the best name
 // TODO battleship health
 // TODO techs
-// TODO attacking aa guns can take hits
+// TODO attacking aa guns can never be destroyed
 // TODO multiple defending aa guns
 enum class UnitType(
     val domain: Domain,
@@ -18,7 +17,7 @@ enum class UnitType(
 
     /**
      * Specifies a [Domain] which this [UnitType] can only hit, e.g. [SUBMARINE]s can only hit [Domain.SEA].
-     * Null indicates that this [UnitType] can hit any [Domain].
+     * Null (default) indicates that this [UnitType] can hit any [Domain].
      */
     val targetDomain: Domain? = null
 ) {
