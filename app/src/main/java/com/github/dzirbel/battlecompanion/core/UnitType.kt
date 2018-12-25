@@ -3,7 +3,9 @@ package com.github.dzirbel.battlecompanion.core
 // TODO UnitType might not be the best name
 // TODO battleship health
 // TODO techs
-// TODO attacking aa guns can still take hits
+// TODO attacking aa guns can take hits
+// TODO bombarding battleships should only be able to hit land units
+// TODO multiple defending aa guns
 enum class UnitType(
     val domain: Domain,
     val attack: Int,
