@@ -4,7 +4,7 @@ import com.github.dzirbel.battlecompanion.core.Army
 import com.github.dzirbel.battlecompanion.core.Board
 import java.text.DecimalFormat
 
-private val PERCENT_FORMAT = DecimalFormat("000.00%")
+private val PERCENT_FORMAT = DecimalFormat("#00.00%")
 
 fun Double.formatPercent(): String = PERCENT_FORMAT.format(this)
 
