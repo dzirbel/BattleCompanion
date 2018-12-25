@@ -35,6 +35,7 @@ data class Board(
      *  the returned [Board] after firing.
      */
     fun roll(rand: Random): Board {
+        // TODO does this work? can first round only units take hits during non-opening fire?
         return runRound(rand, isOpeningFire = true).runRound(rand, isOpeningFire = false).withoutFirstRoundOnlyUnits()
     }
 

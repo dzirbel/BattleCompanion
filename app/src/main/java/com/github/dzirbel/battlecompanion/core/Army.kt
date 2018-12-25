@@ -8,6 +8,7 @@ import kotlin.random.Random
  * [Army] has no knowledge of its state in the combat sequence (e.g. whether it is performing opening fire).
  * Note that [Army]s are immutable.
  *
+ * TODO guarantee that the hp list stays sorted so that identical boards have identical representations
  * TODO guarantee that [units] has no [UnitType]s with no units (i.e. empty hp list) and remove [isEmpty]
  * TODO allow [unitPriority] to be more generic to support user input (i.e. just return a list of casualties from hits)
  * TODO add default unit priorities that first compare on cost and then on attack/defense and vice versa

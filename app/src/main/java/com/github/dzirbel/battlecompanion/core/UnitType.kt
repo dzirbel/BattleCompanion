@@ -1,8 +1,10 @@
 package com.github.dzirbel.battlecompanion.core
 
 // TODO techs
+// TODO aa guns only fire once (not once per air unit)
 // TODO attacking aa guns can never be destroyed
 // TODO multiple defending aa guns
+// TODO don't allow defending bombarding battleships (although they technically work?)
 enum class UnitType(
     val domain: Domain,
     val attack: Int,
