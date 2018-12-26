@@ -56,18 +56,12 @@ data class Army(
         var generalHits = 0
         val domainHits = EnumMap<Domain, Int>(Domain::class.java)
 
-        val supportingArtillery = if (isAttacking) units.count { it.key == UnitType.ARTILLERY } else 0
+        val supportingArtillery = if (isAttacking) count { it == UnitType.ARTILLERY } else 0
 
         units.forEach { (unitType, hps) ->
             if (unitType.hasOpeningFire(enemies = enemies) == isOpeningFire) {
-                var remainingCount = hps.size
-                if (unitType == UnitType.INFANTRY && supportingArtillery > 0) {
-                    val supportedInfantry = Math.min(remainingCount, supportingArtillery)
-                    remainingCount -= supportedInfantry
-
-                    // TODO replace the constant 2
-                    val rollLimit = 2
-                    val rolls = supportedInfantry * unitType.numberOfRolls(enemies = enemies)
+                fun roll(count: Int, rollLimit: Int) {
+                    val rolls = count * unitType.numberOfRolls(enemies = enemies)
                     val hits = rand.rollDice(rolls).count { it <= rollLimit }
                     if (unitType.targetDomain == null) {
                         generalHits += hits
@@ -76,15 +70,17 @@ data class Army(
                     }
                 }
 
-                // TODO generalize to a function?
-                val rollLimit = if (isAttacking) unitType.attack else unitType.defense
-                val rolls = remainingCount * unitType.numberOfRolls(enemies = enemies)
-                val hits = rand.rollDice(rolls).count { it <= rollLimit }
-                if (unitType.targetDomain == null) {
-                    generalHits += hits
-                } else {
-                    domainHits[unitType.targetDomain] = (domainHits[unitType.targetDomain] ?: 0) + hits
+                var remainingCount = hps.size
+
+                if (unitType == UnitType.INFANTRY && supportingArtillery > 0) {
+                    val supportedInfantry = Math.min(remainingCount, supportingArtillery)
+                    remainingCount -= supportedInfantry
+
+                    // TODO replace the constant 2
+                    roll(count = supportedInfantry, rollLimit = 2)
                 }
+
+                roll(count = remainingCount, rollLimit = if (isAttacking) unitType.attack else unitType.defense)
             }
         }
 
@@ -93,7 +89,6 @@ data class Army(
 
     /**
      * Returns a copy of this [Army] with the given [HitProfile] inflicted.
-     * TODO doing this all in one step might be better for performance/cleaner
      */
     fun takeHits(hits: HitProfile): Army {
         var remainingArmy = this
