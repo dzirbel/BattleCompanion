@@ -41,7 +41,7 @@ fun main() {
         attackers = attackers,
         defenders = defenders
     )
-    println("Running $N simulations of battle:")
+    println("Running ${N.format()} simulations of battle:")
     println()
     startingBoard.print()
     println()
@@ -95,9 +95,9 @@ fun main() {
     val percentLosses = losses.toDouble() / N
     val percentTies = ties.toDouble() / N
 
-    println("Wins:   ${wins.format(chars)} (${percentWin.formatPercent()})")
-    println("Losses: ${losses.format(chars)} (${percentLosses.formatPercent()})")
-    println("Ties:   ${ties.format(chars)} (${percentTies.formatPercent()})")
+    println("Wins:   ${wins.format().padStart(chars)} (${percentWin.formatPercent()})")
+    println("Losses: ${losses.format().padStart(chars)} (${percentLosses.formatPercent()})")
+    println("Ties:   ${ties.format().padStart(chars)} (${percentTies.formatPercent()})")
     println()
 
     if (PRINT_BOARD_FREQUENCIES) {
