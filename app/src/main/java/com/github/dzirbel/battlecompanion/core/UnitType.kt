@@ -69,7 +69,7 @@ enum class UnitType(
      */
     fun numberOfRolls(enemies: Army): Int {
         return when (this) {
-            ANTIAIRCRAFT_GUN -> enemies.countBy { it.domain == Domain.AIR }
+            ANTIAIRCRAFT_GUN -> enemies.count { it.domain == Domain.AIR }
             else -> 1
         }
     }
@@ -81,7 +81,7 @@ enum class UnitType(
         return when (this) {
             ANTIAIRCRAFT_GUN -> true
             BOMBARDING_BATTLESHIP -> true
-            SUBMARINE -> enemies.countBy { it == DESTROYER } == 0
+            SUBMARINE -> enemies.count { it == DESTROYER } == 0
             else -> false
         }
     }

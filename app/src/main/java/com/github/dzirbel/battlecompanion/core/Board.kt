@@ -21,9 +21,9 @@ data class Board(
      */
     fun getOutcome(): Outcome? {
         return when {
-            attackers.isEmpty() && defenders.isEmpty() -> Outcome.Tie
-            attackers.isEmpty() && !defenders.isEmpty() -> Outcome.DefenderWon(defenders)
-            !attackers.isEmpty() && defenders.isEmpty() -> Outcome.AttackerWon(attackers)
+            attackers.units.isEmpty() && defenders.units.isEmpty() -> Outcome.Tie
+            attackers.units.isEmpty() && defenders.units.isNotEmpty() -> Outcome.DefenderWon(defenders)
+            attackers.units.isNotEmpty() && defenders.units.isEmpty() -> Outcome.AttackerWon(attackers)
             else -> null
         }
     }

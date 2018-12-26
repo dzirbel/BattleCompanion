@@ -1,21 +1,21 @@
 package com.github.dzirbel.battlecompanion.core
 
+import com.github.dzirbel.battlecompanion.util.MultiSet
 import kotlin.random.Random
 
 /**
- * Represents one side of a combat board: the [units] (a map from each [UnitType] to a list of the hp's of each unit of
- *  that type; zero is not allowed) and [unitPriority] which determines which units to lose as casualties first.
+ * Represents one side of a combat board: the [units] (a map from each [UnitType] to a [MultiSet] of the hp's of each
+ *  unit of that type; zero hp is not allowed) and [unitPriority] which determines which units to lose as casualties
+ *  first.
  * [Army] has no knowledge of its state in the combat sequence (e.g. whether it is performing opening fire).
  * Note that [Army]s are immutable.
  *
- * TODO guarantee that the hp list stays sorted so that identical boards have identical representations
- * TODO guarantee that [units] has no [UnitType]s with no units (i.e. empty hp list) and remove [isEmpty]
  * TODO allow [unitPriority] to be more generic to support user input (i.e. just return a list of casualties from hits)
  * TODO add default unit priorities that first compare on cost and then on attack/defense and vice versa
  * TODO try to instantiate all instances of [units] as EnumMaps for performance?
  */
 data class Army(
-    val units: Map<UnitType, List<Int>>,
+    val units: Map<UnitType, MultiSet<Int>>,
     val unitPriority: Comparator<UnitType>
 ) {
 
@@ -27,7 +27,7 @@ data class Army(
          */
         fun fromMap(unitPriority: Comparator<UnitType>, units: Map<UnitType, Int>): Army {
             return Army(
-                units = units.mapValues { (unitType, count) -> List(count) { unitType.maxHp } },
+                units = units.mapValues { (unitType, count) -> MultiSet(mapOf(unitType.maxHp to count)) },
                 unitPriority = unitPriority
             )
         }
@@ -36,12 +36,8 @@ data class Army(
     /**
      * Returns the total number of [UnitType]s (of any hp) in this [Army] satisfying the given [predicate].
      */
-    fun countBy(predicate: (UnitType) -> Boolean): Int {
+    fun count(predicate: (UnitType) -> Boolean): Int {
         return units.filterKeys(predicate).values.sumBy { it.size }
-    }
-
-    fun isEmpty(): Boolean {
-        return units.all { it.value.isEmpty() }
     }
 
     /**
@@ -61,8 +57,8 @@ data class Army(
 
         units
             .filterKeys { it.hasOpeningFire(enemies = enemies) == isOpeningFire }
-            .forEach { (unitType, hpList) ->
-                var remainingCount = hpList.count()
+            .forEach { (unitType, hps) ->
+                var remainingCount = hps.size
                 if (unitType == UnitType.INFANTRY && supportingArtillery > 0) {
                     val supportedInfantry = Math.min(remainingCount, supportingArtillery)
                     remainingCount -= supportedInfantry
@@ -103,18 +99,17 @@ data class Army(
         }
 
         var remainingHits = hits
-
         return copy(
             units = units
                 // first take hits on all units that have more than 1 hp
-                .mapValues { (unitType, hpList) ->
+                .mapValues { (unitType, hps) ->
                     when {
-                        unitType == UnitType.ANTIAIRCRAFT_GUN || unitType == UnitType.BOMBARDING_BATTLESHIP -> hpList
-                        domain != null && unitType.domain != domain -> hpList
-                        remainingHits == 0 -> hpList
-                        hpList.all { it == 1 } -> hpList
+                        unitType == UnitType.ANTIAIRCRAFT_GUN || unitType == UnitType.BOMBARDING_BATTLESHIP -> hps
+                        domain != null && unitType.domain != domain -> hps
+                        remainingHits == 0 -> hps
+                        hps.all { it == 1 } -> hps
                         else -> {
-                            hpList.map { hp ->
+                            hps.map { hp ->
                                 val hitsTaken = Math.min(hp - 1, remainingHits)
                                 remainingHits -= hitsTaken
                                 hp - hitsTaken
@@ -122,18 +117,18 @@ data class Army(
                         }
                     }
                 }
-                .toSortedMap(unitPriority)  // TODO always have units sorted by unitPriority?
-                .mapValues { (unitType, hpList) ->
+                .toSortedMap(unitPriority)  // TODO always keep units sorted by unitPriority?
+                .mapValues { (unitType, hps) ->
                     when {
                         // TODO generalize
-                        unitType == UnitType.ANTIAIRCRAFT_GUN || unitType == UnitType.BOMBARDING_BATTLESHIP -> hpList
-                        domain != null && unitType.domain != domain -> hpList
-                        remainingHits == 0 -> hpList
+                        unitType == UnitType.ANTIAIRCRAFT_GUN || unitType == UnitType.BOMBARDING_BATTLESHIP -> hps
+                        domain != null && unitType.domain != domain -> hps
+                        remainingHits == 0 -> hps
                         else -> {
-                            // TODO assert that hpList only has 1s?
-                            val casualties = Math.min(hpList.size, remainingHits)
+                            val casualties = Math.min(hps.size, remainingHits)
                             remainingHits -= casualties
-                            hpList.drop(casualties)
+                            // only remove units with 1 hp (which should be all units at this point)
+                            hps.minus(element = 1, n = casualties)
                         }
                     }
                 }

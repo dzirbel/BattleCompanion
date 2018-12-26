@@ -11,16 +11,16 @@ fun Double.formatPercent(): String = PERCENT_FORMAT.format(this)
 fun Int.format(chars: Int) = String.format("%0${chars}d", this)
 
 fun Board.print() {
-    if (attackers.isEmpty() && defenders.isEmpty()) {
+    if (attackers.units.isEmpty() && defenders.units.isEmpty()) {
         println("Empty board")
     }
 
-    if (!attackers.isEmpty()) {
+    if (attackers.units.isNotEmpty()) {
         println("Attackers:")
         attackers.print()
     }
 
-    if (!defenders.isEmpty()) {
+    if (defenders.units.isNotEmpty()) {
         println("Defenders:")
         defenders.print()
     }
@@ -28,6 +28,6 @@ fun Board.print() {
 
 fun Army.print() {
     units.forEach { (unitType, hpList) ->
-        println(" ${unitType.prettyName} : ${hpList.count()} | $hpList")
+        println(" ${unitType.prettyName} : ${hpList.count()} | ${hpList.toString { "${it}hp" }}")
     }
 }
