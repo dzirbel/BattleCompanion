@@ -21,11 +21,7 @@ class MultiSet<T>(counts: Map<T, Int> = mapOf()) : Collection<T> {
 
     override fun isEmpty() = counts.isEmpty()
 
-    override fun iterator(): Iterator<T> {
-        return counts.keys.toList()
-            .flatMap { element -> List(countOf(element)) { element } }
-            .iterator()
-    }
+    override fun iterator() = toList().iterator()
 
     override fun hashCode() = counts.hashCode()
 
@@ -37,6 +33,13 @@ class MultiSet<T>(counts: Map<T, Int> = mapOf()) : Collection<T> {
 
     fun toString(elementToString: (T) -> String): String {
         return counts.entries.joinToString(transform = { "${it.value} of ${elementToString(it.key)}" })
+    }
+
+    /**
+     * Returns a [List] containing all the elements in this [MultiSet] (including repetitions), in an arbitrary order.
+     */
+    fun toList(): List<T> {
+        return counts.flatMap { (element, count) -> List(count) { element } }
     }
 
     /**
@@ -87,20 +90,6 @@ class MultiSet<T>(counts: Map<T, Int> = mapOf()) : Collection<T> {
      * [mapper] is called once for each copy of an element in this [MultiSet] (rather than once for all the copies).
      */
     fun map(mapper: (T) -> T): MultiSet<T> {
-        return counts.entries
-            .map { (element, count) ->
-                List(count) { mapper(element) }.groupBy { it }.mapValues { it.value.size }
-            }
-            .reduce { a, b -> a.mergeSum(b) }
-            .let { MultiSet(it) }
-    }
-
-    private fun Map<T, Int>.mergeSum(other: Map<T, Int>): Map<T, Int> {
-        val result = LinkedHashMap<T, Int>(this.size + other.size)
-        result.putAll(this)
-        for ((key, value) in other) {
-            result[key] = (result[key] ?: 0) + value
-        }
-        return result
+        return MultiSet(toList().groupBy(mapper).mapValues { it.value.size })
     }
 }

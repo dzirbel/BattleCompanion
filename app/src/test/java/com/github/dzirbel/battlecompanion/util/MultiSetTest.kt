@@ -23,6 +23,8 @@ internal class MultiSetTest {
         assertFalse(empty.containsAll(setOf("a", "b", "c")))
 
         assertFalse(empty.iterator().hasNext())
+
+        assertSameElements(emptyList(), empty.toList())
     }
 
     @Test
@@ -43,6 +45,8 @@ internal class MultiSetTest {
             iterations++
         }
         assertEquals(1, iterations)
+
+        assertSameElements(listOf(item), singleton.toList())
     }
 
     @Test
@@ -65,6 +69,8 @@ internal class MultiSetTest {
             iterations++
         }
         assertEquals(count, iterations)
+
+        assertSameElements(List(count) { item }, set.toList())
     }
 
     @Test
@@ -88,6 +94,8 @@ internal class MultiSetTest {
         }
         assertEquals(items.size, iterations)
         assertEquals(items, found)
+
+        assertSameElements(items.toList(), set.toList())
     }
 
     @Test
@@ -118,6 +126,8 @@ internal class MultiSetTest {
         }
         assertEquals(total, iterations)
         assertEquals(items.filterValues { it > 0 }, found)
+
+        assertSameElements(listOf("a", "a", "a", "b", "b", "c"), set.toList())
     }
 
     @Test
@@ -255,6 +265,11 @@ internal class MultiSetTest {
         val result = MultiSet(mapOf("b" to 5, "c" to 5))
 
         assertEquals(result, mapped)
+    }
+
+    private fun <T> assertSameElements(a: List<T>, b: List<T>) {
+        assertTrue(a.toMutableList().apply { b.forEach { remove(it) } }.isEmpty())
+        assertTrue(b.toMutableList().apply { a.forEach { remove(it) } }.isEmpty())
     }
 
     private fun <T> MultiSet<T>.assertDoesNotContain(element: T) {
