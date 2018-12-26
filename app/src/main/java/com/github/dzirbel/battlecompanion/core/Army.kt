@@ -1,6 +1,7 @@
 package com.github.dzirbel.battlecompanion.core
 
 import com.github.dzirbel.battlecompanion.util.MultiSet
+import java.util.EnumMap
 import kotlin.random.Random
 
 /**
@@ -52,12 +53,13 @@ data class Army(
      * Computes the [HitProfile] that this [Army] inflicts in a single round, rolling with the given [Random].
      */
     fun rollHits(rand: Random, enemies: Army, isAttacking: Boolean, isOpeningFire: Boolean): HitProfile {
-        var hits: HitProfile = mapOf()
+        var generalHits = 0
+        val domainHits = EnumMap<Domain, Int>(Domain::class.java)
+
         val supportingArtillery = if (isAttacking) units.count { it.key == UnitType.ARTILLERY } else 0
 
-        units
-            .filterKeys { it.hasOpeningFire(enemies = enemies) == isOpeningFire }
-            .forEach { (unitType, hps) ->
+        units.forEach { (unitType, hps) ->
+            if (unitType.hasOpeningFire(enemies = enemies) == isOpeningFire) {
                 var remainingCount = hps.size
                 if (unitType == UnitType.INFANTRY && supportingArtillery > 0) {
                     val supportedInfantry = Math.min(remainingCount, supportingArtillery)
@@ -66,16 +68,27 @@ data class Army(
                     // TODO replace the constant 2
                     val rollLimit = 2
                     val rolls = supportedInfantry * unitType.numberOfRolls(enemies = enemies)
-                    hits = hits.plusHits(unitType.targetDomain, rand.rollDice(rolls).count { it <= rollLimit })
+                    val hits = rand.rollDice(rolls).count { it <= rollLimit }
+                    if (unitType.targetDomain == null) {
+                        generalHits += hits
+                    } else {
+                        domainHits[unitType.targetDomain] = (domainHits[unitType.targetDomain] ?: 0) + hits
+                    }
                 }
 
                 // TODO generalize to a function?
                 val rollLimit = if (isAttacking) unitType.attack else unitType.defense
                 val rolls = remainingCount * unitType.numberOfRolls(enemies = enemies)
-                hits = hits.plusHits(unitType.targetDomain, rand.rollDice(rolls).count { it <= rollLimit })
+                val hits = rand.rollDice(rolls).count { it <= rollLimit }
+                if (unitType.targetDomain == null) {
+                    generalHits += hits
+                } else {
+                    domainHits[unitType.targetDomain] = (domainHits[unitType.targetDomain] ?: 0) + hits
+                }
             }
+        }
 
-        return hits
+        return HitProfile(generalHits = generalHits, domainHits = domainHits)
     }
 
     /**
@@ -84,11 +97,11 @@ data class Army(
      */
     fun takeHits(hits: HitProfile): Army {
         var remainingArmy = this
-        hits.filterKeys { it != null }.forEach { (domain, count) ->
+        hits.domainHits.forEach { (domain, count) ->
             remainingArmy = remainingArmy.takeHits(count, domain)
         }
 
-        remainingArmy = remainingArmy.takeHits(hits[null] ?: 0)
+        remainingArmy = remainingArmy.takeHits(hits.generalHits)
 
         return remainingArmy
     }
@@ -107,7 +120,7 @@ data class Army(
                         unitType.firstRoundOnly -> hps
                         domain != null && unitType.domain != domain -> hps
                         remainingHits == 0 -> hps
-                        hps.all { it == 1 } -> hps
+                        hps.hasOnly(1) -> hps
                         else -> {
                             hps.map { hp ->
                                 val hitsTaken = Math.min(hp - 1, remainingHits)

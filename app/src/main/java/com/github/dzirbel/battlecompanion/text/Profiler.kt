@@ -96,8 +96,13 @@ private fun profileBattle(army: Army, name: String): Long {
     val start = System.nanoTime()
     repeat(N) {
         var board = Board(army, army)
+        var firstRound = true
         while (board.getOutcome() == null) {
             board = board.roll(rand)
+            if (firstRound) {
+                board = board.withoutFirstRoundOnlyUnits()
+                firstRound = false
+            }
         }
     }
     val duration = System.nanoTime() - start

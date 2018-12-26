@@ -83,7 +83,7 @@ enum class UnitType(
         return when (this) {
             ANTIAIRCRAFT_GUN -> true
             BOMBARDING_BATTLESHIP -> true
-            SUBMARINE -> enemies.count { it == DESTROYER } == 0
+            SUBMARINE -> enemies.units.any { it.key == DESTROYER }
             else -> false
         }
     }

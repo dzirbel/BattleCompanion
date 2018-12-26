@@ -37,6 +37,7 @@ internal class MultiSetTest {
         singleton.assertContains(item, 1)
         singleton.assertDoesNotContain("")
         singleton.assertDoesNotContain(" ")
+        assertTrue(singleton.hasOnly(item))
 
         assertTrue(singleton.iterator().hasNext())
         var iterations = 0
@@ -81,7 +82,10 @@ internal class MultiSetTest {
         assertEquals(items.size, set.size)
         assertFalse(set.isEmpty())
 
-        items.forEach { set.assertContains(it, 1) }
+        items.forEach {
+            set.assertContains(it, 1)
+            assertFalse(set.hasOnly(it))
+        }
         set.assertDoesNotContain("")
         set.assertDoesNotContain("e")
 
@@ -108,6 +112,7 @@ internal class MultiSetTest {
         assertFalse(set.isEmpty())
 
         items.forEach { item, count ->
+            assertFalse(set.hasOnly(item))
             if (count > 0) {
                 set.assertContains(item, count)
             } else {
@@ -243,17 +248,6 @@ internal class MultiSetTest {
         assertEquals(result, mapped)
     }
 
-    private fun <T> MultiSet<T>.assertContains(element: T, count: Int) {
-        assertTrue(contains(element))
-        assertTrue(containsAll(setOf(element)))
-        assertTrue(any { it == element })
-        assertEquals(count, countOf(element))
-
-        var found = false
-        forEach { if (it == element) found = true }
-        assertTrue(found)
-    }
-
     @Test
     fun testMapCopies() {
         val set = MultiSet(mapOf("a" to 10))
@@ -272,11 +266,23 @@ internal class MultiSetTest {
         assertTrue(b.toMutableList().apply { a.forEach { remove(it) } }.isEmpty())
     }
 
+    private fun <T> MultiSet<T>.assertContains(element: T, count: Int) {
+        assertTrue(contains(element))
+        assertTrue(containsAll(setOf(element)))
+        assertTrue(any { it == element })
+        assertEquals(count, countOf(element))
+
+        var found = false
+        forEach { if (it == element) found = true }
+        assertTrue(found)
+    }
+
     private fun <T> MultiSet<T>.assertDoesNotContain(element: T) {
         assertFalse(contains(element))
         assertFalse(containsAll(setOf(element)))
         assertFalse(any { it == element })
         assertEquals(0, countOf(element))
+        assertFalse(hasOnly(element))
 
         forEach { assertNotEquals(element, it) }
     }

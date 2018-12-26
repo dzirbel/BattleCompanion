@@ -56,10 +56,13 @@ fun main() {
                 println("Round $round:")
                 board.print()
                 println()
-                round++
             }
 
             board = board.roll(rand)
+            if (round == 1) {
+                board = board.withoutFirstRoundOnlyUnits()
+            }
+            round++
         }
 
         if (PRINT_REMAINING) {

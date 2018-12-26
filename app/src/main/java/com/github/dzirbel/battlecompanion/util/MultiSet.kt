@@ -49,6 +49,11 @@ class MultiSet<T>(counts: Map<T, Int> = mapOf()) : Collection<T> {
     fun countOf(element: T) = counts[element] ?: 0
 
     /**
+     * Determines whether this [MultiSet] contains only the given [element] (with any number of copies).
+     */
+    fun hasOnly(element: T) = counts.size == 1 && counts.containsKey(element)
+
+    /**
      * Returns a copy of this [MultiSet] with an element added, optionally multiple times (i.e. multiple copies).
      *
      * @param n the number of times to add [element]; default 1
