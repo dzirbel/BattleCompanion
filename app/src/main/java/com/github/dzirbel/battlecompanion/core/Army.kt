@@ -104,7 +104,7 @@ data class Army(
                 // first take hits on all units that have more than 1 hp
                 .mapValues { (unitType, hps) ->
                     when {
-                        unitType == UnitType.ANTIAIRCRAFT_GUN || unitType == UnitType.BOMBARDING_BATTLESHIP -> hps
+                        unitType.maxHp == 0 -> hps
                         domain != null && unitType.domain != domain -> hps
                         remainingHits == 0 -> hps
                         hps.all { it == 1 } -> hps
@@ -120,8 +120,7 @@ data class Army(
                 .toSortedMap(unitPriority)  // TODO always keep units sorted by unitPriority?
                 .mapValues { (unitType, hps) ->
                     when {
-                        // TODO generalize
-                        unitType == UnitType.ANTIAIRCRAFT_GUN || unitType == UnitType.BOMBARDING_BATTLESHIP -> hps
+                        unitType.maxHp == 0 -> hps
                         domain != null && unitType.domain != domain -> hps
                         remainingHits == 0 -> hps
                         else -> {
