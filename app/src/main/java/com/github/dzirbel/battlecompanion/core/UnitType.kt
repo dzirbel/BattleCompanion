@@ -12,13 +12,13 @@ enum class UnitType(
 
     /**
      * The maximum number of hits this [UnitType] can sustain, typically 1 (default).
-     * 0 denotes units that cannot take hits, such as antiaircraft guns and bombarding battleships.
-     * Negative values are not allowed.
+     * Must be strictly positive.
      */
     val maxHp: Int = 1,
 
     /**
      * Whether this [UnitType] participates only in the first round of combat, after which it should be removed.
+     * Units for which this is true are not allowed to take hits in combat.
      */
     val firstRoundOnly: Boolean = false,
 
@@ -37,7 +37,6 @@ enum class UnitType(
         attack = 0,
         defense = 1,
         cost = 5,
-        maxHp = 0,
         firstRoundOnly = true,
         targetDomain = Domain.AIR
     ),
@@ -46,7 +45,6 @@ enum class UnitType(
         attack = 4,
         defense = 0,
         cost = 24,
-        maxHp = 0,
         firstRoundOnly = true,
         targetDomain = Domain.LAND
     ),
