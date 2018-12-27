@@ -13,6 +13,21 @@ interface CasualtyPicker {
      */
     fun pick(army: Army, hits: HitProfile): Map<UnitType, Int>
 
+    sealed class InvalidCasualtiesError : Throwable() {
+
+        data class TooFewInDomain(
+            val domain: Domain?,
+            val casualties: Int,
+            val hits: Int
+        ) : InvalidCasualtiesError()
+
+        data class TooManyOfType(
+            val unitType: UnitType,
+            val casualties: Int,
+            val units: Int
+        ) : InvalidCasualtiesError()
+    }
+
     private object Comparators {
         val cost: Comparator<UnitType> = Comparator.comparingInt { it.cost }
         val attack: Comparator<UnitType> = Comparator.comparingInt { it.attack }

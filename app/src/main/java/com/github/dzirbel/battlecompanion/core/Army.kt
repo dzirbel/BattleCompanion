@@ -109,10 +109,7 @@ data class Army(
 
         // then have the CasualtyPicker pick which units take the casualties and apply them
         val casualties = casualtyPicker.pick(army = armyAfterDamage, hits = hitsAfterDamage)
-
-        // TODO check that the returned casualties match the remaining hits (i.e. no cheating)?
-        // this would also be required to guarantee safety (i.e. not removing too many units of the
-        // same type which will throw an exception)
+        armyAfterDamage.checkCasualties(casualties = casualties, hits = hitsAfterDamage)
 
         return copy(
             units = armyAfterDamage.units.mapValues { (unitType, hps) ->
@@ -173,5 +170,53 @@ data class Army(
             }
 
         return Pair(copy(units = afterDamage), remainingHits)
+    }
+
+    private fun checkCasualties(casualties: Map<UnitType, Int>, hits: HitProfile) {
+        hits.domainHits.forEach { domain, count ->
+            val unitsInDomain = units.entries.sumBy {
+                if (it.key.domain == domain) it.value.size else 0
+            }
+            val casualtiesInDomain = casualties.entries.sumBy {
+                if (it.key.domain == domain) it.value else 0
+            }
+
+            // check that the number of casualties taken in this domain is at least the min between
+            // the number of units in this domain and the number of domain-specific hits
+            if (casualtiesInDomain < Math.min(count, unitsInDomain)) {
+                throw CasualtyPicker.InvalidCasualtiesError.TooFewInDomain(
+                    domain = domain,
+                    casualties = casualtiesInDomain,
+                    hits = count
+                )
+            }
+        }
+
+        val remainingCasualties = casualties.values.sum() - hits.domainHits.values.sum()
+        val totalUnits = units.values.sumBy { it.size }
+        val remainingHits = hits.generalHits
+
+        // check that the total number of casualties (minus the domain-specific hits) is at least
+        // the min between the total number of units and the domain-agnostic hits
+        if (remainingCasualties < Math.min(remainingHits, totalUnits)) {
+            throw CasualtyPicker.InvalidCasualtiesError.TooFewInDomain(
+                domain = null,
+                casualties = remainingCasualties,
+                hits = remainingHits
+            )
+        }
+
+        casualties.forEach { unitType, count ->
+            val unitsOfType = units[unitType]?.size ?: 0
+
+            // check we don't take more casualties of each type than the number of units
+            if (count > unitsOfType) {
+                throw CasualtyPicker.InvalidCasualtiesError.TooManyOfType(
+                    unitType = unitType,
+                    casualties = count,
+                    units = unitsOfType
+                )
+            }
+        }
     }
 }
