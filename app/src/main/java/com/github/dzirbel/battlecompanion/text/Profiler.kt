@@ -59,6 +59,7 @@ private val armies = mapOf(
 private val rand = Random(42)
 private const val N = 1_000_000
 
+// TODO output profiling results to a text file
 fun main() {
     val start = System.nanoTime()
     val scores = mutableListOf<Int>()
