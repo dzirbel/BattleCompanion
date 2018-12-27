@@ -17,13 +17,15 @@ enum class UnitType(
     val maxHp: Int = 1,
 
     /**
-     * Whether this [UnitType] participates only in the first round of combat, after which it should be removed.
+     * Whether this [UnitType] participates only in the first round of combat, after which it should
+     *  be removed.
      * Units for which this is true are not allowed to take hits in combat.
      */
     val firstRoundOnly: Boolean = false,
 
     /**
-     * Specifies a [Domain] which this [UnitType] can only hit, e.g. [SUBMARINE]s can only hit [Domain.SEA].
+     * Specifies a [Domain] which this [UnitType] can only hit, e.g. [SUBMARINE]s can only hit
+     *  [Domain.SEA].
      * Null (default) indicates that this [UnitType] can hit any [Domain].
      */
     val targetDomain: Domain? = null
@@ -64,7 +66,10 @@ enum class UnitType(
     AIRCRAFT_CARRIER(domain = Domain.SEA, attack = 1, defense = 3, cost = 16),
     BATTLESHIP(domain = Domain.SEA, attack = 4, defense = 4, cost = 24, maxHp = 2);
 
-    val prettyName = name.split("_").joinToString(separator = " ", transform = { it.toLowerCase().capitalize() })
+    val prettyName = name.split("_").joinToString(
+        separator = " ",
+        transform = { it.toLowerCase().capitalize() }
+    )
 
     /**
      * Determines the number of dice this unit should throw each round against the given [Army].
@@ -77,7 +82,8 @@ enum class UnitType(
     }
 
     /**
-     * Determines whether this [UnitType] should fire during the opening fire round against the given [Army].
+     * Determines whether this [UnitType] should fire during the opening fire round against the
+     *  given [Army].
      */
     fun hasOpeningFire(enemies: Army): Boolean {
         return when (this) {

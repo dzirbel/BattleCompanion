@@ -3,7 +3,8 @@ package com.github.dzirbel.battlecompanion.core
 import kotlin.random.Random
 
 /**
- * Represents the state of the combat board at a specific time, which simply contains the [attackers] and [defenders].
+ * Represents the state of the combat board at a specific time, which simply contains the
+ *  [attackers] and [defenders].
  * Note that since [Army] is immutable, [Board] is as well.
  * TODO submarine submerging
  * TODO attackers retreating
@@ -22,8 +23,10 @@ data class Board(
     fun getOutcome(): Outcome? {
         return when {
             attackers.units.isEmpty() && defenders.units.isEmpty() -> Outcome.Tie
-            attackers.units.isEmpty() && defenders.units.isNotEmpty() -> Outcome.DefenderWon(defenders)
-            attackers.units.isNotEmpty() && defenders.units.isEmpty() -> Outcome.AttackerWon(attackers)
+            attackers.units.isEmpty() && defenders.units.isNotEmpty() ->
+                Outcome.DefenderWon(defenders)
+            attackers.units.isNotEmpty() && defenders.units.isEmpty() ->
+                Outcome.AttackerWon(attackers)
             else -> null
         }
     }
@@ -33,10 +36,18 @@ data class Board(
      *  [Random] and returns a [Board] with the result.
      */
     fun roll(rand: Random): Board {
-        val attackerOpeningFire =
-            attackers.rollHits(rand = rand, enemies = defenders, isAttacking = true, isOpeningFire = true)
-        val defenderOpeningFire =
-            defenders.rollHits(rand = rand, enemies = attackers, isAttacking = false, isOpeningFire = true)
+        val attackerOpeningFire = attackers.rollHits(
+            rand = rand,
+            enemies = defenders,
+            isAttacking = true,
+            isOpeningFire = true
+        )
+        val defenderOpeningFire = defenders.rollHits(
+            rand = rand,
+            enemies = attackers,
+            isAttacking = false,
+            isOpeningFire = true
+        )
 
         val remainingAttackers = attackers.takeHits(defenderOpeningFire)
         val remainingDefenders = defenders.takeHits(attackerOpeningFire)

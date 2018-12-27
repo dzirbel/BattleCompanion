@@ -5,14 +5,15 @@ import java.util.EnumMap
 import kotlin.random.Random
 
 /**
- * Represents one side of a combat board: the [units] (a map from each [UnitType] to a [MultiSet] of the hp's of each
- *  unit of that type; zero hp is not allowed) and [unitPriority] which determines which units to lose as casualties
- *  first.
- * [Army] has no knowledge of its state in the combat sequence (e.g. whether it is performing opening fire).
+ * Represents one side of a combat board: the [units] (a map from each [UnitType] to a [MultiSet] of
+ *  the hp's of each unit of that type; zero hp is not allowed) and [unitPriority] which determines
+ *  which units to lose as casualties first.
+ * [Army] has no knowledge of its state in the combat sequence (e.g. whether it is performing
+ *  opening fire).
  * Note that [Army]s are immutable.
  *
- * TODO allow [unitPriority] to be more generic to support user input (i.e. just return a list of casualties from hits)
- * TODO add default unit priorities that first compare on cost and then on attack/defense and vice versa
+ * TODO allow [unitPriority] to be more generic for user input (i.e. return a list of casualties)
+ * TODO default unit priorities that compare on cost and then attack/defense and vice versa
  * TODO try to instantiate all instances of [units] as EnumMaps for performance?
  */
 data class Army(
@@ -23,19 +24,22 @@ data class Army(
     companion object {
 
         /**
-         * Returns an [Army] with the given [unitPriority] and [units] as a map from the [UnitType] to the number of
-         *  units, all initialized to their respective [UnitType.maxHp].
+         * Returns an [Army] with the given [unitPriority] and [units] as a map from the [UnitType]
+         *  to the number of units, all initialized to their respective [UnitType.maxHp].
          */
         fun fromMap(unitPriority: Comparator<UnitType>, units: Map<UnitType, Int>): Army {
             return Army(
-                units = units.mapValues { (unitType, count) -> MultiSet(mapOf(unitType.maxHp to count)) },
+                units = units.mapValues { (unitType, count) ->
+                    MultiSet(mapOf(unitType.maxHp to count))
+                },
                 unitPriority = unitPriority
             )
         }
     }
 
     /**
-     * Returns the total number of [UnitType]s (of any hp) in this [Army] satisfying the given [predicate].
+     * Returns the total number of [UnitType]s (of any hp) in this [Army] satisfying the given
+     *  [predicate].
      */
     fun count(predicate: (UnitType) -> Boolean): Int {
         return units.filterKeys(predicate).values.sumBy { it.size }
@@ -50,9 +54,15 @@ data class Army(
     }
 
     /**
-     * Computes the [HitProfile] that this [Army] inflicts in a single round, rolling with the given [Random].
+     * Computes the [HitProfile] that this [Army] inflicts in a single round, rolling with the given
+     *  [Random].
      */
-    fun rollHits(rand: Random, enemies: Army, isAttacking: Boolean, isOpeningFire: Boolean): HitProfile {
+    fun rollHits(
+        rand: Random,
+        enemies: Army,
+        isAttacking: Boolean,
+        isOpeningFire: Boolean
+    ): HitProfile {
         var generalHits = 0
         val domainHits = EnumMap<Domain, Int>(Domain::class.java)
 
@@ -66,7 +76,8 @@ data class Army(
                     if (unitType.targetDomain == null) {
                         generalHits += hits
                     } else {
-                        domainHits[unitType.targetDomain] = (domainHits[unitType.targetDomain] ?: 0) + hits
+                        domainHits[unitType.targetDomain] =
+                                (domainHits[unitType.targetDomain] ?: 0) + hits
                     }
                 }
 
@@ -80,7 +91,10 @@ data class Army(
                     roll(count = supportedInfantry, rollLimit = 2)
                 }
 
-                roll(count = remainingCount, rollLimit = if (isAttacking) unitType.attack else unitType.defense)
+                roll(
+                    count = remainingCount,
+                    rollLimit = if (isAttacking) unitType.attack else unitType.defense
+                )
             }
         }
 
