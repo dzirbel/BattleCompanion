@@ -2,6 +2,7 @@ package com.github.dzirbel.battlecompanion.text
 
 import com.github.dzirbel.battlecompanion.core.Army
 import com.github.dzirbel.battlecompanion.core.Board
+import com.github.dzirbel.battlecompanion.core.CasualtyPicker
 import com.github.dzirbel.battlecompanion.core.Outcome
 import com.github.dzirbel.battlecompanion.core.UnitType
 import java.util.concurrent.TimeUnit
@@ -9,7 +10,7 @@ import kotlin.math.log10
 import kotlin.random.Random
 
 private val attackers = Army.fromMap(
-    unitPriority = Comparator { u1, u2 -> u1.cost.compareTo(u2.cost) },
+    casualtyPicker = CasualtyPicker.ByCost(isAttacking = true),
     units = mapOf(
         UnitType.INFANTRY to 1,
         UnitType.TANK to 1
@@ -17,7 +18,7 @@ private val attackers = Army.fromMap(
 )
 
 private val defenders = Army.fromMap(
-    unitPriority = Comparator { u1, u2 -> u1.cost.compareTo(u2.cost) },
+    casualtyPicker = CasualtyPicker.ByCost(isAttacking = false),
     units = mapOf(
         UnitType.INFANTRY to 2
     )

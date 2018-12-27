@@ -2,51 +2,41 @@ package com.github.dzirbel.battlecompanion.text
 
 import com.github.dzirbel.battlecompanion.core.Army
 import com.github.dzirbel.battlecompanion.core.Board
+import com.github.dzirbel.battlecompanion.core.CasualtyPicker
 import com.github.dzirbel.battlecompanion.core.UnitType
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
-private val unitPriority = Comparator<UnitType> { u1, u2 -> u1.cost.compareTo(u2.cost) }
+private val attackerCasualtyPicker = CasualtyPicker.ByCost(isAttacking = true)
+private val defenderCasualtyPicker = CasualtyPicker.ByCost(isAttacking = false)
 
-private val smallArmy = Army.fromMap(
-    unitPriority = unitPriority,
-    units = mapOf(
-        UnitType.INFANTRY to 1,
-        UnitType.TANK to 1
-    )
+private val smallArmy = mapOf(
+    UnitType.INFANTRY to 1,
+    UnitType.TANK to 1
 )
 
-private val mediumArmy = Army.fromMap(
-    unitPriority = unitPriority,
-    units = mapOf(
-        UnitType.INFANTRY to 4,
-        UnitType.ARTILLERY to 1,
-        UnitType.TANK to 2,
-        UnitType.FIGHTER to 1
-    )
+private val mediumArmy = mapOf(
+    UnitType.INFANTRY to 4,
+    UnitType.ARTILLERY to 1,
+    UnitType.TANK to 2,
+    UnitType.FIGHTER to 1
 )
 
-private val largeArmy = Army.fromMap(
-    unitPriority = unitPriority,
-    units = mapOf(
-        UnitType.INFANTRY to 12,
-        UnitType.ARTILLERY to 5,
-        UnitType.TANK to 8,
-        UnitType.ANTIAIRCRAFT_GUN to 1,
-        UnitType.FIGHTER to 7,
-        UnitType.BOMBER to 2
-    )
+private val largeArmy = mapOf(
+    UnitType.INFANTRY to 12,
+    UnitType.ARTILLERY to 5,
+    UnitType.TANK to 8,
+    UnitType.ANTIAIRCRAFT_GUN to 1,
+    UnitType.FIGHTER to 7,
+    UnitType.BOMBER to 2
 )
 
-private val seaArmy = Army.fromMap(
-    unitPriority = unitPriority,
-    units = mapOf(
-        UnitType.BATTLESHIP to 1,
-        UnitType.DESTROYER to 1,
-        UnitType.AIRCRAFT_CARRIER to 1,
-        UnitType.FIGHTER to 3,
-        UnitType.SUBMARINE to 2
-    )
+private val seaArmy = mapOf(
+    UnitType.BATTLESHIP to 1,
+    UnitType.DESTROYER to 1,
+    UnitType.AIRCRAFT_CARRIER to 1,
+    UnitType.FIGHTER to 3,
+    UnitType.SUBMARINE to 2
 )
 
 private val armies = mapOf(
@@ -92,11 +82,16 @@ fun main() {
     }
 }
 
-private fun profileBattle(army: Army, name: String): Long {
+private fun profileBattle(units: Map<UnitType, Int>, name: String): Long {
     print("Profiling $name battle with ${N.format()} runs...")
     val start = System.nanoTime()
+
+    val startingBoard = Board(
+        attackers = Army.fromMap(units = units, casualtyPicker = attackerCasualtyPicker),
+        defenders = Army.fromMap(units = units, casualtyPicker = defenderCasualtyPicker)
+    )
     repeat(N) {
-        var board = Board(army, army)
+        var board = startingBoard
         var firstRound = true
         while (board.getOutcome() == null) {
             board = board.roll(rand)

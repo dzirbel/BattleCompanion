@@ -6,33 +6,31 @@ import kotlin.random.Random
 
 /**
  * Represents one side of a combat board: the [units] (a map from each [UnitType] to a [MultiSet] of
- *  the hp's of each unit of that type; zero hp is not allowed) and [unitPriority] which determines
+ *  the hp's of each unit of that type; zero hp is not allowed) and [casualtyPicker] which chooses
  *  which units to lose as casualties first.
  * [Army] has no knowledge of its state in the combat sequence (e.g. whether it is performing
  *  opening fire).
  * Note that [Army]s are immutable.
  *
- * TODO allow [unitPriority] to be more generic for user input (i.e. return a list of casualties)
- * TODO default unit priorities that compare on cost and then attack/defense and vice versa
  * TODO try to instantiate all instances of [units] as EnumMaps for performance?
  */
 data class Army(
     val units: Map<UnitType, MultiSet<Int>>,
-    val unitPriority: Comparator<UnitType>
+    val casualtyPicker: CasualtyPicker
 ) {
 
     companion object {
 
         /**
-         * Returns an [Army] with the given [unitPriority] and [units] as a map from the [UnitType]
-         *  to the number of units, all initialized to their respective [UnitType.maxHp].
+         * Returns an [Army] with the given [casualtyPicker] and  [units] as a map from the
+         *  [UnitType] to the number of units, all initialized to their respective [UnitType.maxHp].
          */
-        fun fromMap(unitPriority: Comparator<UnitType>, units: Map<UnitType, Int>): Army {
+        fun fromMap(units: Map<UnitType, Int>, casualtyPicker: CasualtyPicker): Army {
             return Army(
                 units = units.mapValues { (unitType, count) ->
                     MultiSet(mapOf(unitType.maxHp to count))
                 },
-                unitPriority = unitPriority
+                casualtyPicker = casualtyPicker
             )
         }
     }
@@ -105,55 +103,75 @@ data class Army(
      * Returns a copy of this [Army] with the given [HitProfile] inflicted.
      */
     fun takeHits(hits: HitProfile): Army {
-        var remainingArmy = this
-        hits.domainHits.forEach { (domain, count) ->
-            remainingArmy = remainingArmy.takeHits(count, domain)
-        }
+        // first take as many hits as damage on units as possible
+        // (i.e. bring units down to 1hp before taking casualties)
+        val (armyAfterDamage, hitsAfterDamage) = takeDamage(hits)
 
-        remainingArmy = remainingArmy.takeHits(hits.generalHits)
+        // then have the CasualtyPicker pick which units take the casualties and apply them
+        val casualties = casualtyPicker.pick(army = armyAfterDamage, hits = hitsAfterDamage)
 
-        return remainingArmy
+        // TODO check that the returned casualties match the remaining hits (i.e. no cheating)?
+        // this would also be required to guarantee safety (i.e. not removing too many units of the
+        // same type which will throw an exception)
+
+        return copy(
+            units = armyAfterDamage.units.mapValues { (unitType, hps) ->
+                // remove only units with 1hp (which should be all of them at this point)
+                casualties[unitType]?.takeIf { it > 0 }
+                    ?.let { hps.minus(element = 1, n = it) } ?: hps
+            }.filterValues { it.isNotEmpty() }
+        )
     }
 
-    private fun takeHits(hits: Int, domain: Domain? = null): Army {
-        if (hits == 0) {
-            return this
+    private fun takeDamage(hits: HitProfile): Pair<Army, HitProfile> {
+        var remainingArmy = this
+        var remainingHits = hits
+        hits.domainHits.forEach { (domain, count) ->
+            if (count > 0) {
+                val (armyAfterDamage, countAfterDamage) = takeDamage(count, domain)
+                if (countAfterDamage != count) {
+                    remainingArmy = armyAfterDamage
+                    remainingHits = hits.copy(
+                        domainHits = hits.domainHits.plus(domain to countAfterDamage)
+                    )
+                }
+            }
+        }
+
+        if (hits.generalHits > 0) {
+            val (armyAfterDamage, countAfterDamage) = takeDamage(hits.generalHits, null)
+            if (countAfterDamage != hits.generalHits) {
+                remainingArmy = armyAfterDamage
+                remainingHits = hits.copy(generalHits = countAfterDamage)
+            }
+        }
+
+        return Pair(remainingArmy, remainingHits)
+    }
+
+    private fun takeDamage(hits: Int, domain: Domain?): Pair<Army, Int> {
+        if (units.all { (domain != null && it.key.domain != domain) || it.value.hasOnly(1) }) {
+            return Pair(this, hits)
         }
 
         var remainingHits = hits
-        return copy(
-            units = units
-                // first take hits on all units that have more than 1 hp
-                .mapValues { (unitType, hps) ->
-                    when {
-                        unitType.firstRoundOnly -> hps
-                        domain != null && unitType.domain != domain -> hps
-                        remainingHits == 0 -> hps
-                        hps.hasOnly(1) -> hps
-                        else -> {
-                            hps.map { hp ->
-                                val hitsTaken = Math.min(hp - 1, remainingHits)
-                                remainingHits -= hitsTaken
-                                hp - hitsTaken
-                            }
+        val afterDamage = units
+            .mapValues { (unitType, hps) ->
+                when {
+                    unitType.firstRoundOnly -> hps
+                    domain != null && unitType.domain != domain -> hps
+                    remainingHits == 0 -> hps
+                    hps.hasOnly(1) -> hps
+                    else -> {
+                        hps.map { hp ->
+                            val hitsTaken = Math.min(hp - 1, remainingHits)
+                            remainingHits -= hitsTaken
+                            hp - hitsTaken
                         }
                     }
                 }
-                .toSortedMap(unitPriority)  // TODO always keep units sorted by unitPriority?
-                .mapValues { (unitType, hps) ->
-                    when {
-                        unitType.firstRoundOnly -> hps
-                        domain != null && unitType.domain != domain -> hps
-                        remainingHits == 0 -> hps
-                        else -> {
-                            val casualties = Math.min(hps.size, remainingHits)
-                            remainingHits -= casualties
-                            // only remove units with 1 hp (which should be all units at this point)
-                            hps.minus(element = 1, n = casualties)
-                        }
-                    }
-                }
-                .filterValues { it.isNotEmpty() }
-        )
+            }
+
+        return Pair(copy(units = afterDamage), remainingHits)
     }
 }
