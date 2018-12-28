@@ -10,6 +10,8 @@ interface CasualtyPicker {
     /**
      * Chooses which units of [army] should be lost as casualties to the given [hits], as a map from
      *  each [UnitType] to the number of units of that type to be casualties.
+     * This function is only called when the [army] is not completely wiped out by the [hits], i.e.
+     *  there is a real choice.
      */
     fun pick(army: Army, hits: HitProfile): Map<UnitType, Int>
 
@@ -35,7 +37,6 @@ interface CasualtyPicker {
         val tieBreaker: Comparator<UnitType> = Comparator.comparingInt { it.ordinal }
     }
 
-    // TODO implement keepInvadingUnit
     abstract class ByComparator(
         private val comparator: Comparator<UnitType>,
         private val keepInvadingUnit: Boolean = false
@@ -43,6 +44,15 @@ interface CasualtyPicker {
 
         override fun pick(army: Army, hits: HitProfile): Map<UnitType, Int> {
             val sortedUnits = army.units.toSortedMap(comparator)
+
+            val bestInvadingUnit =
+                if (keepInvadingUnit) {
+                    sortedUnits.toList().last { (unitType, _) ->
+                        unitType.canInvade() && !unitType.firstRoundOnly
+                    }.first
+                } else {
+                    null
+                }
 
             val casualties = mutableMapOf<UnitType, Int>()
 
@@ -57,7 +67,8 @@ interface CasualtyPicker {
                         val casualtiesSoFar = casualties[unitType] ?: 0
                         val unitCount = hps.size - casualtiesSoFar
                         if (unitCount > 0) {
-                            val hitsTaken = Math.min(remainingHits, unitCount)
+                            val minLeft = if (unitType == bestInvadingUnit) 1 else 0
+                            val hitsTaken = Math.min(remainingHits, unitCount - minLeft)
                             remainingHits -= hitsTaken
                             casualties[unitType] = casualtiesSoFar + hitsTaken
                             if (remainingHits == 0) {

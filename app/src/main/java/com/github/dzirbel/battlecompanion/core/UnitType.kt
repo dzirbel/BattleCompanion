@@ -93,4 +93,10 @@ enum class UnitType(
             else -> false
         }
     }
+
+    /**
+     * Determines whether this [UnitType] can capture a territory or sea zone; i.e. is not an air
+     *  unit.
+     */
+    fun canInvade() = domain != Domain.AIR
 }

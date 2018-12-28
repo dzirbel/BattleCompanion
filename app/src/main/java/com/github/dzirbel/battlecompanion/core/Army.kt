@@ -103,6 +103,10 @@ data class Army(
      * Returns a copy of this [Army] with the given [HitProfile] inflicted.
      */
     fun takeHits(hits: HitProfile): Army {
+        if (isWipedBy(hits)) {
+            return copy(units = emptyMap())
+        }
+
         // first take as many hits as damage on units as possible
         // (i.e. bring units down to 1hp before taking casualties)
         val (armyAfterDamage, hitsAfterDamage) = takeDamage(hits)
@@ -170,6 +174,18 @@ data class Army(
             }
 
         return Pair(copy(units = afterDamage), remainingHits)
+    }
+
+    private fun isWipedBy(hits: HitProfile): Boolean {
+        val domainHpTaken = hits.domainHits.mapValues { (domain, domainHits) ->
+            // this compute the total hp in the domain, not quite count()
+            val domainHp = units.filterKeys { it.domain == domain }.values.sumBy { it.sum() }
+            Math.max(domainHits, domainHp)
+        }.values.sum()
+
+        val totalHp = units.values.sumBy { it.sum() }
+
+        return hits.generalHits >= totalHp - domainHpTaken
     }
 
     private fun checkCasualties(casualties: Map<UnitType, Int>, hits: HitProfile) {
