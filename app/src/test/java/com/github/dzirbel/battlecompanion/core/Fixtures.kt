@@ -65,7 +65,7 @@ internal object Armies {
         )
     }
 
-    private fun fromUnits(
+    fun fromUnits(
         units: Map<UnitType, Int>,
         casualtyPicker: CasualtyPicker = CasualtyPickers.default
     ): Army {
