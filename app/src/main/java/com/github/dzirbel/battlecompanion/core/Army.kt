@@ -27,9 +27,9 @@ data class Army(
          */
         fun fromMap(units: Map<UnitType, Int>, casualtyPicker: CasualtyPicker): Army {
             return Army(
-                units = units.mapValues { (unitType, count) ->
-                    MultiSet(mapOf(unitType.maxHp to count))
-                },
+                units = units
+                    .filterValues { it > 0 }
+                    .mapValues { (unitType, count) -> MultiSet(mapOf(unitType.maxHp to count)) },
                 casualtyPicker = casualtyPicker
             )
         }
