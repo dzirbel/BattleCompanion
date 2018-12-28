@@ -85,8 +85,7 @@ data class Army(
                     val supportedInfantry = Math.min(remainingCount, supportingArtillery)
                     remainingCount -= supportedInfantry
 
-                    // TODO replace the constant 2
-                    roll(count = supportedInfantry, rollLimit = 2)
+                    roll(count = supportedInfantry, rollLimit = UnitType.ARTILLERY.attack)
                 }
 
                 roll(
