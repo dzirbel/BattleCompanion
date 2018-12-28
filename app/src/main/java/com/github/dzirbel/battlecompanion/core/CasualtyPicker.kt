@@ -47,9 +47,7 @@ interface CasualtyPicker {
 
             val bestInvadingUnit =
                 if (keepInvadingUnit) {
-                    sortedUnits.toList().last { (unitType, _) ->
-                        unitType.canInvade() && !unitType.firstRoundOnly
-                    }.first
+                    sortedUnits.keys.last { it.canInvade() }
                 } else {
                     null
                 }
