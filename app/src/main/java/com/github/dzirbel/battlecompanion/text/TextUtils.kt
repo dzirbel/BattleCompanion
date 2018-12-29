@@ -29,7 +29,7 @@ fun Board.print() {
 }
 
 fun Army.print() {
-    units.forEach { (unitType, hpList) ->
-        println(" ${unitType.prettyName} : ${hpList.count()} | ${hpList.toString { "${it}hp" }}")
+    units.forEach { (unitType, hps) ->
+        println(" ${unitType.prettyName} : ${hps.count()} | ${hps.toString { "${it}hp" }}")
     }
 }

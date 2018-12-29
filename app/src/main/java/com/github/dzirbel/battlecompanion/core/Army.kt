@@ -1,5 +1,6 @@
 package com.github.dzirbel.battlecompanion.core
 
+import android.util.Rational
 import com.github.dzirbel.battlecompanion.util.MultiSet
 import java.util.EnumMap
 import kotlin.random.Random
@@ -96,6 +97,14 @@ data class Army(
         }
 
         return HitProfile(generalHits = generalHits, domainHits = domainHits)
+    }
+
+    fun getHitDistribution(
+        enemies: Army,
+        isAttacking: Boolean,
+        isOpeningFire: Boolean
+    ): Map<HitProfile, Rational> {
+        TODO()
     }
 
     /**

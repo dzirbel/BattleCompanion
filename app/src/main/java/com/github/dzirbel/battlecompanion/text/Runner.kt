@@ -1,5 +1,6 @@
 package com.github.dzirbel.battlecompanion.text
 
+import com.github.dzirbel.battlecompanion.core.Analyzer
 import com.github.dzirbel.battlecompanion.core.Army
 import com.github.dzirbel.battlecompanion.core.Board
 import com.github.dzirbel.battlecompanion.core.CasualtyPicker
@@ -30,22 +31,45 @@ private const val PRINT_EACH_ROUND = false
 private const val PRINT_REMAINING = false
 
 fun main() {
-    val rand = Random
+    val start = System.nanoTime()
 
+    val board = Board(
+        attackers = attackers,
+        defenders = defenders
+    )
+
+    println("Running battle:")
+    println()
+    board.print()
+    println()
+
+    runAnalysis(board)
+    runSimulations(board)
+
+    val duration = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start)
+    println("Took ${duration}ms")
+}
+
+private fun runAnalysis(startingBoard: Board) {
+    println("Analyzing...")
+
+    val analysis = Analyzer.analyze(startingBoard)
+
+    println("Done:")
+    println(analysis)
+
+    println()
+    println()
+    println()
+}
+
+private fun runSimulations(startingBoard: Board) {
+    val rand = Random
     var wins = 0
     var losses = 0
     var ties = 0
 
-    val start = System.nanoTime()
-
-    val startingBoard = Board(
-        attackers = attackers,
-        defenders = defenders
-    )
-    println("Running ${N.format()} simulations of battle:")
-    println()
-    startingBoard.print()
-    println()
+    println("Running ${N.format()} simulations...")
 
     val finalBoards = mutableMapOf<Board, Int>()
 
@@ -112,7 +136,4 @@ fun main() {
             println()
         }
     }
-
-    val duration = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start)
-    println("Took ${duration}ms")
 }
