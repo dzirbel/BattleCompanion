@@ -1,6 +1,7 @@
 package com.github.dzirbel.battlecompanion.util
 
 import java.math.BigInteger
+import java.math.MathContext
 
 // TODO support NaN (0/0) and +/- infinite (+/-1/0)
 class Rational private constructor(
@@ -33,13 +34,19 @@ class Rational private constructor(
         }
     }
 
-    override fun toByte() = (p.toDouble() / q.toDouble()).toByte()
-    override fun toChar() = (p.toDouble() / q.toDouble()).toChar()
-    override fun toDouble() = p.toDouble() / q.toDouble()
-    override fun toFloat() = p.toFloat() / q.toFloat()
-    override fun toInt() = (p.toDouble() / q.toDouble()).toInt()
-    override fun toLong() = (p.toDouble() / q.toDouble()).toLong()
-    override fun toShort() = (p.toDouble() / q.toDouble()).toShort()
+    override fun toByte() = (p / q).toByte()
+    override fun toChar() = (p / q).toChar()
+    override fun toShort() = (p / q).toShort()
+    override fun toInt() = (p / q).toInt()
+    override fun toLong() = (p / q).toLong()
+
+    override fun toDouble(): Double {
+        return (p.toBigDecimal().divide(q.toBigDecimal(), MathContext.DECIMAL64)).toDouble()
+    }
+
+    override fun toFloat(): Float {
+        return (p.toBigDecimal().divide(q.toBigDecimal(), MathContext.DECIMAL32)).toFloat()
+    }
 
     override fun equals(other: Any?): Boolean {
         return other is Rational && other.p == p && other.q == q

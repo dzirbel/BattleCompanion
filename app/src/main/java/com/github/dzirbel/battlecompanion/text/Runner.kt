@@ -25,7 +25,7 @@ private val attackers = Army.fromMap(
 private val defenders = Army.fromMap(
     casualtyPicker = CasualtyPicker.ByCost(isAttacking = false),
     units = mapOf(
-        UnitType.INFANTRY to 3,
+        UnitType.INFANTRY to 7,
         UnitType.TANK to 3,
         UnitType.FIGHTER to 2,
         UnitType.ANTIAIRCRAFT_GUN to 1
