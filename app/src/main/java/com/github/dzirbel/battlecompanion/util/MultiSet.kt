@@ -8,6 +8,19 @@ package com.github.dzirbel.battlecompanion.util
  */
 class MultiSet<T>(counts: Map<T, Int> = mapOf()) : Collection<T> {
 
+    companion object {
+
+        /**
+         * Returns a [MultiSet] containing the elements of the given [List], including repetitions.
+         * TODO convert this to an Iterable.toMultiSet() extension function?
+         */
+        fun <T> fromList(list: List<T>): MultiSet<T> {
+            val counts = mutableMapOf<T, Int>()
+            list.forEach { element -> counts.compute(element) { _, value -> (value ?: 0) + 1 } }
+            return MultiSet(counts)
+        }
+    }
+
     private val counts: Map<T, Int> = counts.filterValues { it > 0 }
 
     /**
@@ -73,6 +86,21 @@ class MultiSet<T>(counts: Map<T, Int> = mapOf()) : Collection<T> {
     }
 
     /**
+     * Returns a [MultiSet] containing both the elements of this [MultiSet] and the given one,
+     *  counting all repetitions.
+     */
+    operator fun plus(set: MultiSet<T>): MultiSet<T> {
+        if (isEmpty()) return set
+        if (set.isEmpty()) return this
+
+        return MultiSet(
+            (counts.keys + set.counts.keys)
+                .map { element -> Pair(element, countOf(element) + set.countOf(element)) }
+                .toMap()
+        )
+    }
+
+    /**
      * Returns a copy of this [MultiSet] with an element removed, optionally multiple times (i.e.
      *  multiple copies).
      *
@@ -98,12 +126,40 @@ class MultiSet<T>(counts: Map<T, Int> = mapOf()) : Collection<T> {
     }
 
     /**
+     * Returns a [MultiSet] with the elements of the given [MultiSet] safely removed (i.e. if there
+     *  are more duplicates in [set] than this [MultiSet], or elements in [set] but not this
+     *  [MultiSet], the extras are ignored).
+     */
+    operator fun minus(set: MultiSet<T>): MultiSet<T> {
+        if (isEmpty() || set.isEmpty()) return this
+
+        return MultiSet(
+            counts
+                .mapValues { (element, count) -> count - set.countOf(element) }
+                .filterValues { it > 0 }
+        )
+    }
+
+    /**
+     * Returns a [MultiSet] with each elements of this set repeated [n] times, including duplicates.
+     * Returns an empty [MultiSet] is [n] is zero.
+     */
+    fun repeat(n: Int): MultiSet<T> {
+        return when {
+            n < 0 -> throw IllegalArgumentException()
+            n == 0 -> MultiSet(emptyMap())
+            n == 1 -> this
+            else -> MultiSet(counts.mapValues { (_, count) -> count * n })
+        }
+    }
+
+    /**
      * Returns a [MultiSet] containing the elements of this [MultiSet] (including their duplicates)
      *  having been mapped by the given [mapper].
      * [mapper] is called once for each copy of an element in this [MultiSet] (rather than once for
      *  all the copies).
      */
-    fun map(mapper: (T) -> T): MultiSet<T> {
+    fun <R> map(mapper: (T) -> R): MultiSet<R> {
         return MultiSet(toList().groupBy(mapper).mapValues { it.value.size })
     }
 }

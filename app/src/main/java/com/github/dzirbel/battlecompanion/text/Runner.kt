@@ -14,21 +14,14 @@ import kotlin.random.Random
 private val attackers = Army.fromMap(
     casualtyPicker = CasualtyPicker.ByCost(isAttacking = true),
     units = mapOf(
-        UnitType.INFANTRY to 3,
-        UnitType.ARTILLERY to 1,
-        UnitType.TANK to 1,
-        UnitType.FIGHTER to 1,
-        UnitType.BOMBER to 1
+        UnitType.TANK to 5
     )
 )
 
 private val defenders = Army.fromMap(
     casualtyPicker = CasualtyPicker.ByCost(isAttacking = false),
     units = mapOf(
-        UnitType.INFANTRY to 7,
-        UnitType.TANK to 3,
-        UnitType.FIGHTER to 2,
-        UnitType.ANTIAIRCRAFT_GUN to 1
+        UnitType.TANK to 5
     )
 )
 

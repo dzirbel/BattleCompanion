@@ -160,7 +160,7 @@ internal class MultiSetTest {
     }
 
     @Test
-    fun testPlus() {
+    fun testPlusElement() {
         var set = MultiSet<String>()
 
         set = set.plus("a")
@@ -178,18 +178,40 @@ internal class MultiSetTest {
         try {
             set = set.plus("c", -1)
             fail()
-        } catch (ex: IllegalArgumentException) { }
+        } catch (ex: IllegalArgumentException) {
+        }
         assertEquals(MultiSet(mapOf("a" to 3, "b" to 2)), set)
 
         try {
             set = set.plus("c", 0)
             fail()
-        } catch (ex: IllegalArgumentException) { }
+        } catch (ex: IllegalArgumentException) {
+        }
         assertEquals(MultiSet(mapOf("a" to 3, "b" to 2)), set)
     }
 
     @Test
-    fun testMinus() {
+    fun testPlus() {
+        assertEquals(MultiSet<String>(), MultiSet<String>() + MultiSet())
+
+        assertEquals(
+            MultiSet(mapOf("a" to 1, "b" to 2)),
+            MultiSet(mapOf("a" to 1)) + MultiSet(mapOf("b" to 2))
+        )
+
+        assertEquals(
+            MultiSet(mapOf("a" to 3)),
+            MultiSet(mapOf("a" to 1)) + MultiSet(mapOf("a" to 2))
+        )
+
+        assertEquals(
+            MultiSet(mapOf("a" to 2, "b" to 4, "c" to 1)),
+            MultiSet(mapOf("a" to 1, "b" to 1, "c" to 1)) + MultiSet(mapOf("a" to 1, "b" to 3))
+        )
+    }
+
+    @Test
+    fun testMinusElement() {
         var set = MultiSet(mapOf("a" to 5, "b" to 5, "c" to 5))
 
         set = set.minus("a")
@@ -204,20 +226,74 @@ internal class MultiSetTest {
         try {
             set = set.minus("b", 8)
             fail()
-        } catch (ex: IllegalArgumentException) { }
+        } catch (ex: IllegalArgumentException) {
+        }
         assertEquals(MultiSet(mapOf("a" to 4, "b" to 3)), set)
 
         try {
             set = set.minus("a", -1)
             fail()
-        } catch (ex: IllegalArgumentException) { }
+        } catch (ex: IllegalArgumentException) {
+        }
         assertEquals(MultiSet(mapOf("a" to 4, "b" to 3)), set)
 
         try {
             set = set.minus("a", 0)
             fail()
-        } catch (ex: IllegalArgumentException) { }
+        } catch (ex: IllegalArgumentException) {
+        }
         assertEquals(MultiSet(mapOf("a" to 4, "b" to 3)), set)
+    }
+
+    @Test
+    fun testMinus() {
+        assertEquals(MultiSet<String>(), MultiSet<String>() - MultiSet())
+
+        assertEquals(
+            MultiSet(mapOf("a" to 2)),
+            MultiSet(mapOf("a" to 2)) - MultiSet(mapOf("b" to 1))
+        )
+
+        assertEquals(
+            MultiSet(mapOf("a" to 1)),
+            MultiSet(mapOf("a" to 2)) - MultiSet(mapOf("a" to 1))
+        )
+
+        assertEquals(
+            MultiSet<String>(),
+            MultiSet(mapOf("a" to 2)) - MultiSet(mapOf("a" to 2))
+        )
+
+        assertEquals(
+            MultiSet(mapOf("a" to 1, "b" to 1)),
+            MultiSet(mapOf("a" to 1, "b" to 2, "c" to 3)) - MultiSet(mapOf("b" to 1, "c" to 3))
+        )
+    }
+
+    @Test
+    fun testRepeat() {
+        assertEquals(MultiSet<String>(), MultiSet<String>().repeat(0))
+        assertEquals(MultiSet<String>(), MultiSet<String>().repeat(1))
+        assertEquals(MultiSet<String>(), MultiSet<String>().repeat(2))
+
+        assertEquals(MultiSet<String>(), MultiSet(mapOf("a" to 2)).repeat(0))
+        assertEquals(MultiSet(mapOf("a" to 2)), MultiSet(mapOf("a" to 2)).repeat(1))
+        assertEquals(MultiSet(mapOf("a" to 4)), MultiSet(mapOf("a" to 2)).repeat(2))
+        assertEquals(MultiSet(mapOf("a" to 6)), MultiSet(mapOf("a" to 2)).repeat(3))
+
+        assertEquals(MultiSet<String>(), MultiSet(mapOf("a" to 1, "b" to 2, "c" to 3)).repeat(0))
+        assertEquals(
+            MultiSet(mapOf("a" to 1, "b" to 2, "c" to 3)),
+            MultiSet(mapOf("a" to 1, "b" to 2, "c" to 3)).repeat(1)
+        )
+        assertEquals(
+            MultiSet(mapOf("a" to 2, "b" to 4, "c" to 6)),
+            MultiSet(mapOf("a" to 1, "b" to 2, "c" to 3)).repeat(2)
+        )
+        assertEquals(
+            MultiSet(mapOf("a" to 3, "b" to 6, "c" to 9)),
+            MultiSet(mapOf("a" to 1, "b" to 2, "c" to 3)).repeat(3)
+        )
     }
 
     @Test
@@ -259,6 +335,29 @@ internal class MultiSetTest {
         val result = MultiSet(mapOf("b" to 5, "c" to 5))
 
         assertEquals(result, mapped)
+    }
+
+    @Test
+    fun testMapTypes() {
+        val set = MultiSet(mapOf("abc" to 1, "bac" to 2, "cba" to 3))
+        val mapped = set.map { it.first() }
+        val result = MultiSet(mapOf('a' to 1, 'b' to 2, 'c' to 3))
+
+        assertEquals(result, mapped)
+    }
+
+    @Test
+    fun testFromList() {
+        assertEquals(MultiSet<String>(), MultiSet.fromList(emptyList<String>()))
+        assertEquals(MultiSet(mapOf("a" to 1)), MultiSet.fromList(listOf("a")))
+        assertEquals(
+            MultiSet(mapOf("a" to 1, "b" to 1, "c" to 1)),
+            MultiSet.fromList(listOf("c", "b", "a"))
+        )
+        assertEquals(
+            MultiSet(mapOf("a" to 1, "b" to 2, "c" to 3)),
+            MultiSet.fromList(listOf("c", "b", "a", "c", "b", "c"))
+        )
     }
 
     private fun <T> assertSameElements(a: List<T>, b: List<T>) {

@@ -1,10 +1,31 @@
 package com.github.dzirbel.battlecompanion.core
 
+import com.github.dzirbel.battlecompanion.util.MultiSet
 import com.github.dzirbel.battlecompanion.util.Rational
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import java.math.BigInteger
 
 class MathTest {
+
+    @Test
+    fun testFactor() {
+        assertEquals(MultiSet(mapOf(0L to 1)), factor(BigInteger.ZERO))
+        assertEquals(MultiSet<Long>(mapOf()), factor(BigInteger.ONE))
+
+        assertEquals(MultiSet(mapOf(2L to 1)), factor(2.toBigInteger()))
+        assertEquals(MultiSet(mapOf(3L to 1)), factor(3.toBigInteger()))
+        assertEquals(MultiSet(mapOf(2L to 2)), factor(4.toBigInteger()))
+        assertEquals(MultiSet(mapOf(5L to 1)), factor(5.toBigInteger()))
+        assertEquals(MultiSet(mapOf(2L to 1, 3L to 1)), factor(6.toBigInteger()))
+        assertEquals(MultiSet(mapOf(7L to 1)), factor(7.toBigInteger()))
+        assertEquals(MultiSet(mapOf(2L to 3)), factor(8.toBigInteger()))
+        assertEquals(MultiSet(mapOf(3L to 2)), factor(9.toBigInteger()))
+        assertEquals(MultiSet(mapOf(2L to 1, 5L to 1)), factor(10.toBigInteger()))
+
+        assertEquals(MultiSet(mapOf(37L to 1)), factor(37.toBigInteger()))
+        assertEquals(MultiSet(mapOf(2L to 4, 3L to 2, 5L to 1)), factor(720.toBigInteger()))
+    }
 
     @Test
     fun testFactorial() {

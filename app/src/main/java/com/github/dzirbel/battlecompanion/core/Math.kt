@@ -1,7 +1,30 @@
 package com.github.dzirbel.battlecompanion.core
 
+import com.github.dzirbel.battlecompanion.util.MultiSet
 import com.github.dzirbel.battlecompanion.util.Rational
 import java.math.BigInteger
+
+/**
+ * Factors the given [BigInteger] into a [MultiSet] of its prime factors.
+ * TODO optimize
+ */
+fun factor(n: BigInteger): MultiSet<Long> {
+    if (n == BigInteger.ZERO) return MultiSet(mapOf(0L to 1))
+
+    val factors = mutableListOf<Long>()
+    var reduced = n
+    var currentFactor = 2L
+    while (reduced != BigInteger.ONE) {
+        val div = reduced.divideAndRemainder(currentFactor.toBigInteger())
+        if (div[1] == BigInteger.ZERO) {
+            factors.add(currentFactor)
+            reduced = div[0]
+        } else {
+            currentFactor++
+        }
+    }
+    return MultiSet.fromList(factors)
+}
 
 /**
  * Computes the factorial of [n], i.e. `1 * 2 * 3 * ... * n` as a [BigInteger] to avoid overflow.

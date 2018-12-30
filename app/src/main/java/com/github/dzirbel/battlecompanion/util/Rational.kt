@@ -38,20 +38,6 @@ class Rational private constructor(
         }
     }
 
-    override fun toByte() = (p / q).toByte()
-    override fun toChar() = (p / q).toChar()
-    override fun toShort() = (p / q).toShort()
-    override fun toInt() = (p / q).toInt()
-    override fun toLong() = (p / q).toLong()
-
-    override fun toDouble(): Double {
-        return (p.toBigDecimal().divide(q.toBigDecimal(), MathContext.DECIMAL64)).toDouble()
-    }
-
-    override fun toFloat(): Float {
-        return (p.toBigDecimal().divide(q.toBigDecimal(), MathContext.DECIMAL32)).toFloat()
-    }
-
     override fun equals(other: Any?): Boolean {
         return other is Rational && other.p == p && other.q == q
     }
@@ -62,6 +48,20 @@ class Rational private constructor(
 
     override fun toString(): String {
         return "$p / $q"
+    }
+
+    override fun toByte() = (p / q).toByte()
+    override fun toChar() = (p / q).toChar()
+    override fun toShort() = (p / q).toShort()
+    override fun toInt() = (p / q).toInt()
+    override fun toLong() = (p / q).toLong()
+
+    override fun toDouble(): Double {
+        return p.toBigDecimal().divide(q.toBigDecimal(), MathContext.DECIMAL64).toDouble()
+    }
+
+    override fun toFloat(): Float {
+        return p.toBigDecimal().divide(q.toBigDecimal(), MathContext.DECIMAL32).toFloat()
     }
 
     operator fun plus(other: Rational): Rational {
@@ -109,7 +109,7 @@ class Rational private constructor(
      * Returns the [n]th exponent of this [Rational], i.e. `(p/q)^n`.
      */
     fun exp(n: Int): Rational {
-        if (n == 0) return Rational.ONE
+        if (n == 0) return ONE
 
         return Rational(
             p = p.pow(n),
