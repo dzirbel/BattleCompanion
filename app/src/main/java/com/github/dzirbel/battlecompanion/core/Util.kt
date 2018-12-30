@@ -15,9 +15,11 @@ fun Random.rollDie(): Int {
  *  second by the key order of [dim2].
  */
 fun <K, V> cross(dim1: Map<K, V>, dim2: Map<K, V>): Map<Pair<K, K>, Pair<V, V>> {
-    return dim1.flatMap { (k1, v1) ->
-        dim2.map { (k2, v2) -> Pair(k1, k2) to Pair(v1, v2) }
-    }.toMap()
+    val map = mutableMapOf<Pair<K, K>, Pair<V, V>>()
+    dim1.forEach { k1, v1 ->
+        dim2.forEach { k2, v2 -> map[Pair(k1, k2)] = Pair(v1, v2) }
+    }
+    return map
 }
 
 /**
