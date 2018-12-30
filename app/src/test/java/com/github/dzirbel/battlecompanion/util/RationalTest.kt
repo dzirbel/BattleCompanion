@@ -12,6 +12,7 @@ class RationalTest {
         assertEquals(Rational(1, 2), Rational(2, 4))
         assertEquals(Rational(2, 3), Rational(4, 6))
         assertEquals(Rational(3, 8), Rational(1155, 3080))
+        assertEquals(Rational(2, 21), Rational(10, 105))
         assertEquals(Rational.ZERO, Rational(0, 5))
         assertEquals(Rational.ONE, Rational(3, 3))
 
@@ -31,13 +32,33 @@ class RationalTest {
     }
 
     @Test
+    fun testMinus() {
+        assertEquals(Rational(1, 4), Rational(1, 2) - Rational(1, 4))
+        assertEquals(Rational(1, 4), Rational(3, 8) - Rational(1, 8))
+        assertEquals(Rational(1, 27), Rational(2, 3) - Rational(17, 27))
+
+        assertEquals(Rational.ZERO, Rational.ZERO - Rational.ZERO)
+        assertEquals(Rational.ZERO, Rational.ONE - Rational.ONE)
+        assertEquals(Rational.ONE, Rational.ONE - Rational.ZERO)
+    }
+
+    @Test
     fun testTimes() {
         assertEquals(Rational(1, 4), Rational(1, 2) * Rational(1, 2))
         assertEquals(Rational(2, 21), Rational(1, 3) * Rational(2, 7))
+        assertEquals(Rational(2, 21), Rational(2, 15) * Rational(5, 7))
 
         assertEquals(Rational.ZERO, Rational.ZERO * Rational.ZERO)
         assertEquals(Rational.ZERO, Rational.ONE * Rational.ZERO)
         assertEquals(Rational.ZERO, Rational.ZERO * Rational.ONE)
+    }
+
+    @Test
+    fun testTimesBigInteger() {
+        assertEquals(Rational(1, 2), Rational(1, 4) * 2.toBigInteger())
+        assertEquals(Rational.ONE, Rational(1, 2) * 2.toBigInteger())
+        assertEquals(Rational(3, 8), Rational(1, 8) * 3.toBigInteger())
+        assertEquals(Rational(3, 2), Rational(1, 4) * 6.toBigInteger())
     }
 
     @Test
@@ -67,6 +88,7 @@ class RationalTest {
     @Test
     fun testOneMinus() {
         assertEquals(Rational.ZERO, Rational.ONE.oneMinus())
+        assertEquals(Rational.ONE, Rational.ZERO.oneMinus())
         assertEquals(Rational(1, 2), Rational(1, 2).oneMinus())
         assertEquals(Rational(1, 3), Rational(2, 3).oneMinus())
         assertEquals(Rational(2, 3), Rational(1, 3).oneMinus())

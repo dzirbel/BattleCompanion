@@ -44,12 +44,10 @@ fun binomial(p: Rational, n: Int, k: Int): Rational {
         k == 0 -> p.oneMinus().exp(n)
         k == n -> p.exp(n)
         else -> {
-            val coefficient = Rational(
-                numerator = factorialFrom(n = n, k = Math.max(k, n - k)),
-                denominator = factorial(Math.min(k, n - k))
-            )
+            val coefficient =
+                factorialFrom(n = n, k = Math.max(k, n - k)) / factorial(Math.min(k, n - k))
 
-            coefficient * p.exp(k) * p.oneMinus().exp(n - k)
+            (p.exp(k) * p.oneMinus().exp(n - k)) * coefficient
         }
     }
 }
