@@ -18,10 +18,7 @@ class UnitTypeTest {
         assertEquals(
             0,
             UnitType.ANTIAIRCRAFT_GUN.numberOfRolls(
-                Armies.armyWithAirUnits(
-                    fighters = 0,
-                    bombers = 0
-                )
+                Armies.armyWithAirUnits(fighters = 0, bombers = 0)
             )
         )
 
@@ -42,10 +39,7 @@ class UnitTypeTest {
         assertEquals(
             5,
             UnitType.ANTIAIRCRAFT_GUN.numberOfRolls(
-                Armies.armyWithAirUnits(
-                    fighters = 3,
-                    bombers = 2
-                )
+                Armies.armyWithAirUnits(fighters = 3, bombers = 2)
             )
         )
     }

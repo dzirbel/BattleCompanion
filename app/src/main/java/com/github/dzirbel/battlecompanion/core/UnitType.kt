@@ -72,6 +72,14 @@ enum class UnitType(
     )
 
     /**
+     * Determines the attack or defense value of this [UnitType] for the given attacking role, i.e.
+     *  [attack] if [isAttacking] is true and [defense] otherwise.
+     */
+    fun combatPower(isAttacking: Boolean): Int {
+        return if (isAttacking) attack else defense
+    }
+
+    /**
      * Determines the number of dice this unit should throw each round against the given [Army].
      */
     fun numberOfRolls(enemies: Army): Int {

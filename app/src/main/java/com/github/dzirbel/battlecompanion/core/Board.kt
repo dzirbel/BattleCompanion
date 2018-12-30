@@ -66,19 +66,8 @@ data class Board(
         )
 
         return Board(
-            attackers = remainingAttackers.takeHits(defenderHits),
-            defenders = remainingDefenders.takeHits(attackerHits)
-        )
-    }
-
-    /**
-     * Returns a copy of this [Board] without [UnitType]s that should only fire during the first
-     *  round of the battle, i.e. bombarding battleships and defending antiaircraft guns.
-     */
-    fun withoutFirstRoundOnlyUnits(): Board {
-        return Board(
-            attackers = attackers.withoutFirstRoundOnlyUnits(),
-            defenders = defenders.withoutFirstRoundOnlyUnits()
+            attackers = remainingAttackers.takeHits(defenderHits).withoutFirstRoundOnlyUnits(),
+            defenders = remainingDefenders.takeHits(attackerHits).withoutFirstRoundOnlyUnits()
         )
     }
 }

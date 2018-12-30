@@ -6,6 +6,7 @@ import com.github.dzirbel.battlecompanion.core.Board
 import com.github.dzirbel.battlecompanion.core.CasualtyPicker
 import com.github.dzirbel.battlecompanion.core.Outcome
 import com.github.dzirbel.battlecompanion.core.UnitType
+import com.github.dzirbel.battlecompanion.util.Rational
 import java.util.concurrent.TimeUnit
 import kotlin.math.log10
 import kotlin.random.Random
@@ -13,127 +14,120 @@ import kotlin.random.Random
 private val attackers = Army.fromMap(
     casualtyPicker = CasualtyPicker.ByCost(isAttacking = true),
     units = mapOf(
-        UnitType.INFANTRY to 1,
-        UnitType.TANK to 1
+        UnitType.INFANTRY to 3,
+        UnitType.ARTILLERY to 1,
+        UnitType.TANK to 1,
+        UnitType.FIGHTER to 1,
+        UnitType.BOMBER to 1
     )
 )
 
 private val defenders = Army.fromMap(
     casualtyPicker = CasualtyPicker.ByCost(isAttacking = false),
     units = mapOf(
-        UnitType.INFANTRY to 2
+        UnitType.INFANTRY to 3,
+        UnitType.TANK to 3,
+        UnitType.FIGHTER to 2,
+        UnitType.ANTIAIRCRAFT_GUN to 1
     )
 )
 
-private const val N = 100_000
-private const val PRINT_BOARD_FREQUENCIES = true
-private const val PRINT_EACH_ROUND = false
-private const val PRINT_REMAINING = false
+private const val N = 1_000_000
 
 fun main() {
-    val start = System.nanoTime()
+    println("Attackers:")
+    attackers.units.forEach { (unitType, hps) ->
+        println("  ${unitType.prettyName} : ${hps.count()} | ${hps.toString { "${it}hp" }}")
+    }
+
+    println("Defenders:")
+    defenders.units.forEach { (unitType, hps) ->
+        println("  ${unitType.prettyName} : ${hps.count()} | ${hps.toString { "${it}hp" }}")
+    }
 
     val board = Board(
         attackers = attackers,
         defenders = defenders
     )
 
-    println("Running battle:")
-    println()
-    board.print()
-    println()
-
     runAnalysis(board)
     runSimulations(board)
-
-    val duration = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start)
-    println("Took ${duration}ms")
 }
 
 private fun runAnalysis(startingBoard: Board) {
     println("Analyzing...")
-
+    val start = System.nanoTime()
     val analysis = Analyzer.analyze(startingBoard)
+    val duration = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start)
+    println("Done in ${duration}ms:")
 
-    println("Done:")
-    println(analysis)
+    var wins = Rational.ZERO
+    var losses = Rational.ZERO
+    var ties = Rational.ZERO
 
-    println()
-    println()
+    analysis.forEach { outcome, chance ->
+        when (outcome) {
+            is Outcome.AttackerWon -> wins += chance
+            is Outcome.DefenderWon -> losses += chance
+            is Outcome.Tie -> ties += chance
+        }
+    }
+
+    println("  Wins:   ${wins.toDouble().formatPercent()} [$wins]")
+    println("  Losses: ${losses.toDouble().formatPercent()} [$losses]")
+    println("  Ties:   ${ties.toDouble().formatPercent()} [$ties]")
+
+    println("Resulting board frequencies:")
+    analysis.entries.sortedByDescending { it.value.toDouble() }.forEach { (outcome, chance) ->
+        println("  ${chance.toDouble().formatPercent()} [$chance]: $outcome")
+    }
     println()
 }
 
 private fun runSimulations(startingBoard: Board) {
     val rand = Random
-    var wins = 0
-    var losses = 0
-    var ties = 0
+    val outcomes = mutableMapOf<Outcome, Int>()
 
     println("Running ${N.format()} simulations...")
-
-    val finalBoards = mutableMapOf<Board, Int>()
+    val start = System.nanoTime()
 
     repeat(N) {
         var board = startingBoard
-        var round = 1
         while (board.getOutcome() == null) {
-            if (PRINT_EACH_ROUND) {
-                println("Round $round:")
-                board.print()
-                println()
-            }
-
             board = board.roll(rand)
-            if (round == 1) {
-                board = board.withoutFirstRoundOnlyUnits()
-            }
-            round++
         }
 
-        if (PRINT_REMAINING) {
-            val outcome = board.getOutcome()
-            when (outcome) {
-                is Outcome.AttackerWon -> {
-                    println("Attacker won! Remaining units:")
-                    outcome.remaining.print()
-                }
-                is Outcome.DefenderWon -> {
-                    println("Defender won! Remaining units:")
-                    outcome.remaining.print()
-                }
-                is Outcome.Tie -> println("Tie! (all units dead)")
-            }
-            println()
-        }
-
-        if (PRINT_BOARD_FREQUENCIES) {
-            val boardCount = finalBoards[board] ?: 0
-            finalBoards[board] = boardCount + 1
-        }
-
-        when (board.getOutcome()) {
-            is Outcome.AttackerWon -> wins++
-            is Outcome.DefenderWon -> losses++
-            is Outcome.Tie -> ties++
-        }
+        val outcome = board.getOutcome()!!
+        outcomes[outcome] = (outcomes[outcome] ?: 0) + 1
     }
+
+    val duration = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start)
+    println("Done in ${duration}ms:")
 
     val chars = Math.floor(log10(N.toDouble())).toInt() + 1
-    val percentWin = wins.toDouble() / N
-    val percentLosses = losses.toDouble() / N
-    val percentTies = ties.toDouble() / N
+    val wins = outcomes.filterKeys { it is Outcome.AttackerWon }.values.sum()
+    val losses = outcomes.filterKeys { it is Outcome.DefenderWon }.values.sum()
+    val ties = outcomes.filterKeys { it is Outcome.Tie }.values.sum()
 
-    println("Wins:   ${wins.format().padStart(chars)} (${percentWin.formatPercent()})")
-    println("Losses: ${losses.format().padStart(chars)} (${percentLosses.formatPercent()})")
-    println("Ties:   ${ties.format().padStart(chars)} (${percentTies.formatPercent()})")
-    println()
+    println(
+        "  Wins:   ${(wins.toDouble() / N).formatPercent()} " +
+                "[${wins.format().padStart(chars)} / ${N.format()}]"
+    )
+    println(
+        "  Losses: ${(losses.toDouble() / N).formatPercent()} " +
+                "[${losses.format().padStart(chars)} / ${N.format()}]"
+    )
+    println(
+        "  Ties:   ${(ties.toDouble() / N).formatPercent()} " +
+                "[${ties.format().padStart(chars)} / ${N.format()}]"
+    )
 
-    if (PRINT_BOARD_FREQUENCIES) {
-        println("Resulting board frequencies:")
-        finalBoards.entries.sortedByDescending { it.value }.forEach { (board, count) ->
-            println("${(count.toDouble() / N).formatPercent()}:")
-            board.print()
-            println()
-        }
+    println("Resulting board frequencies:")
+    outcomes.entries.sortedByDescending { it.value }.forEach { (outcome, count) ->
+        println(
+            "  ${(count.toDouble() / N).formatPercent()} " +
+                    "[${count.format().padStart(chars)} / ${N.format()}]: $outcome"
+        )
     }
+    println()
 }

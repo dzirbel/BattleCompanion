@@ -1,7 +1,7 @@
 package com.github.dzirbel.battlecompanion.core
 
-import android.util.Rational
 import com.github.dzirbel.battlecompanion.util.MultiSet
+import com.github.dzirbel.battlecompanion.util.Rational
 import java.util.EnumMap
 import kotlin.random.Random
 
@@ -67,7 +67,7 @@ data class Army(
 
         val supportingArtillery = if (isAttacking) count { it == UnitType.ARTILLERY } else 0
 
-        units.forEach { (unitType, hps) ->
+        units.forEach { unitType, hps ->
             if (unitType.hasOpeningFire(enemies = enemies) == isOpeningFire) {
                 fun roll(count: Int, rollLimit: Int) {
                     val rolls = count * unitType.numberOfRolls(enemies = enemies)
@@ -89,22 +89,50 @@ data class Army(
                     roll(count = supportedInfantry, rollLimit = UnitType.ARTILLERY.attack)
                 }
 
-                roll(
-                    count = remainingCount,
-                    rollLimit = if (isAttacking) unitType.attack else unitType.defense
-                )
+                roll(count = remainingCount, rollLimit = unitType.combatPower(isAttacking))
             }
         }
 
         return HitProfile(generalHits = generalHits, domainHits = domainHits)
     }
 
+    /**
+     * Computes the distribution of hits that this [Army] inflicts in a single round.
+     */
     fun getHitDistribution(
         enemies: Army,
         isAttacking: Boolean,
         isOpeningFire: Boolean
-    ): Map<HitProfile, Rational> {
-        TODO()
+    ): HitDistribution {
+        var hitDistribution: HitDistribution = emptyHitDistribution
+
+        val supportingArtillery = if (isAttacking) count { it == UnitType.ARTILLERY } else 0
+
+        units.forEach { unitType, hps ->
+            if (unitType.hasOpeningFire(enemies = enemies) == isOpeningFire) {
+                fun addHits(count: Int, rollLimit: Int) {
+                    val rolls = count * unitType.numberOfRolls(enemies = enemies)
+                    hitDistribution = hitDistribution.plusBinomial(
+                        domain = unitType.targetDomain,
+                        p = Rational(rollLimit, 6),
+                        n = rolls
+                    )
+                }
+
+                var remainingCount = hps.size
+
+                if (unitType == UnitType.INFANTRY && supportingArtillery > 0) {
+                    val supportedInfantry = Math.min(remainingCount, supportingArtillery)
+                    remainingCount -= supportedInfantry
+
+                    addHits(count = supportedInfantry, rollLimit = UnitType.ARTILLERY.attack)
+                }
+
+                addHits(count = remainingCount, rollLimit = unitType.combatPower(isAttacking))
+            }
+        }
+
+        return hitDistribution
     }
 
     /**
@@ -188,7 +216,7 @@ data class Army(
         val domainHpTaken = hits.domainHits.mapValues { (domain, domainHits) ->
             // this compute the total hp in the domain, not quite count()
             val domainHp = units.filterKeys { it.domain == domain }.values.sumBy { it.sum() }
-            Math.max(domainHits, domainHp)
+            Math.min(domainHits, domainHp)
         }.values.sum()
 
         val totalHp = units.values.sumBy { it.sum() }
@@ -197,17 +225,20 @@ data class Army(
     }
 
     private fun checkCasualties(casualties: Map<UnitType, Int>, hits: HitProfile) {
+        var possibleDomainHits = 0
         hits.domainHits.forEach { domain, count ->
             val unitsInDomain = units.entries.sumBy {
-                if (it.key.domain == domain) it.value.size else 0
+                if (it.key.domain == domain && !it.key.firstRoundOnly) it.value.size else 0
             }
             val casualtiesInDomain = casualties.entries.sumBy {
                 if (it.key.domain == domain) it.value else 0
             }
+            val possibleHits = Math.min(count, unitsInDomain)
+            possibleDomainHits += possibleHits
 
             // check that the number of casualties taken in this domain is at least the min between
             // the number of units in this domain and the number of domain-specific hits
-            if (casualtiesInDomain < Math.min(count, unitsInDomain)) {
+            if (casualtiesInDomain < possibleHits) {
                 throw CasualtyPicker.InvalidCasualtiesError.TooFewInDomain(
                     domain = domain,
                     casualties = casualtiesInDomain,
@@ -216,8 +247,10 @@ data class Army(
             }
         }
 
-        val remainingCasualties = casualties.values.sum() - hits.domainHits.values.sum()
-        val totalUnits = units.values.sumBy { it.size }
+        val remainingCasualties = casualties.values.sum() - possibleDomainHits
+        val totalUnits = units.entries.sumBy { (unitType, hps) ->
+            if (unitType.firstRoundOnly) 0 else hps.size
+        }
         val remainingHits = hits.generalHits
 
         // check that the total number of casualties (minus the domain-specific hits) is at least

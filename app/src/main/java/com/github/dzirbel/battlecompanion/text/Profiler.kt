@@ -118,13 +118,8 @@ private fun profileBattle(units: Map<UnitType, Int>, name: String): Long {
     )
     repeat(N) {
         var board = startingBoard
-        var firstRound = true
         while (board.getOutcome() == null) {
             board = board.roll(rand)
-            if (firstRound) {
-                board = board.withoutFirstRoundOnlyUnits()
-                firstRound = false
-            }
         }
     }
     val duration = System.nanoTime() - start

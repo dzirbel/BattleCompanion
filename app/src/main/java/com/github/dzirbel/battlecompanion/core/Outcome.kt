@@ -7,7 +7,18 @@ package com.github.dzirbel.battlecompanion.core
  */
 sealed class Outcome {
 
-    object Tie : Outcome()
-    class AttackerWon(val remaining: Army) : Outcome()
-    class DefenderWon(val remaining: Army) : Outcome()
+    object Tie : Outcome() {
+
+        override fun toString() = "Tie"
+    }
+
+    data class AttackerWon(val remaining: Army) : Outcome() {
+
+        override fun toString() = "Attackers win with ${remaining.units}"
+    }
+
+    data class DefenderWon(val remaining: Army) : Outcome() {
+
+        override fun toString() = "Defenders win with ${remaining.units}"
+    }
 }

@@ -13,4 +13,33 @@ package com.github.dzirbel.battlecompanion.core
 data class HitProfile(
     val generalHits: Int,
     val domainHits: Map<Domain, Int>
-)
+) {
+
+    /**
+     * Determines whether this [HitProfile] has any hits.
+     */
+    fun isEmpty() = generalHits == 0 && domainHits.isEmpty()
+
+    /**
+     * Returns a [HitProfile] plus the given [hits] in the given [domain] (or null for
+     *  [generalHits]).
+     */
+    fun plus(hits: Int, domain: Domain?): HitProfile {
+        if (hits == 0) return this
+
+        return when (domain) {
+            null -> copy(generalHits = generalHits + hits)
+            else -> copy(domainHits = domainHits.plus(domain to (domainHits[domain] ?: 0) + hits))
+        }
+    }
+
+    override fun toString(): String {
+        if (isEmpty()) return "No hits"
+
+        return domainHits
+            .plus(null to generalHits)
+            .filter { it.value > 0 }
+            .map { (domain, hits) -> "$hits to ${domain?.name?.toLowerCase() ?: "anywhere"}" }
+            .joinToString()
+    }
+}
