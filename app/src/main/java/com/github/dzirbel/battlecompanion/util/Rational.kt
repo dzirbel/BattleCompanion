@@ -3,7 +3,11 @@ package com.github.dzirbel.battlecompanion.util
 import java.math.BigInteger
 import java.math.MathContext
 
-// TODO support NaN (0/0) and +/- infinite (+/-1/0)
+/**
+ * Arbitrary precision representation of rational numbers as numerator [p] and denominator [q].
+ *
+ * TODO support NaN (0/0) and +/- infinite (+/-1/0)
+ */
 class Rational private constructor(
     p: BigInteger,
     q: BigInteger,
@@ -101,6 +105,9 @@ class Rational private constructor(
         return Rational(p = p * (other / gcd), q = q / gcd, reduce = false)
     }
 
+    /**
+     * Returns the [n]th exponent of this [Rational], i.e. `(p/q)^n`.
+     */
     fun exp(n: Int): Rational {
         if (n == 0) return Rational.ONE
 
@@ -111,6 +118,9 @@ class Rational private constructor(
         )
     }
 
+    /**
+     * Returns [ONE] minus this [Rational].
+     */
     fun oneMinus(): Rational {
         return Rational(p = q - p, q = q, reduce = false)
     }
