@@ -33,8 +33,8 @@ fun <K, V, R, S> Map<K, V>.flatMapAndReduce(
     flatMapper: (K, V) -> Map<R, S>
 ): Map<R, S> {
     val flatMapped = mutableMapOf<R, MutableList<S>>()
-    entries.forEach { (key, value) ->
-        flatMapper(key, value).forEach { (mappedKey, mappedValue) ->
+    forEach { key, value ->
+        flatMapper(key, value).forEach { mappedKey, mappedValue ->
             flatMapped.compute(mappedKey) { _, list ->
                 list?.apply { add(mappedValue) } ?: mutableListOf(mappedValue)
             }
