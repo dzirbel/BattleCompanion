@@ -67,6 +67,8 @@ class Rational(
     }
 
     fun exp(n: Int): Rational {
+        if (n == 0) return Rational.ONE
+
         return Rational(
             numerator = numerator.pow(n),
             denominator = denominator.pow(n)
