@@ -6,7 +6,7 @@ import java.math.MathContext
 /**
  * Arbitrary precision representation of rational numbers as numerator [p] and denominator [q].
  *
- * TODO support NaN (0/0) and +/- infinite (+/-1/0)
+ * TODO support NaN (0/0) and +/- infinity (+/-1/0)
  */
 class Rational private constructor(
     p: BigInteger,
