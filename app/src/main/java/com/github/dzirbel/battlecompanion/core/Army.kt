@@ -104,7 +104,7 @@ data class Army(
         isAttacking: Boolean,
         isOpeningFire: Boolean
     ): HitDistribution {
-        var hitDistribution: HitDistribution = emptyHitDistribution
+        var hitDistribution = emptyHitDistribution
 
         val supportingArtillery = if (isAttacking) count { it == UnitType.ARTILLERY } else 0
 
@@ -139,9 +139,8 @@ data class Army(
      * Returns a copy of this [Army] with the given [HitProfile] inflicted.
      */
     fun takeHits(hits: HitProfile): Army {
-        if (isWipedBy(hits)) {
-            return copy(units = emptyMap())
-        }
+        if (hits.isEmpty()) return this
+        if (isWipedBy(hits)) return copy(units = emptyMap())
 
         // first take as many hits as damage on units as possible
         // (i.e. bring units down to 1hp before taking casualties)

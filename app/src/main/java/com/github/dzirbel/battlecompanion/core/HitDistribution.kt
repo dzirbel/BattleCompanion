@@ -10,11 +10,11 @@ val emptyHitDistribution = mapOf(
 
 fun HitDistribution.plusBinomial(domain: Domain?, p: Rational, n: Int): HitDistribution {
     return flatMapAndReduce(Rational::plus) { hitProfile, originalChance ->
-        List(n + 1) { hits ->
-            Pair(
-                hitProfile.plus(hits = hits, domain = domain),
-                binomial(k = hits, n = n, p = p) * originalChance
-            )
-        }.toMap()
+        val map = mutableMapOf<HitProfile, Rational>()
+        for (hits in 0..n) {
+            map[hitProfile.plus(hits = hits, domain = domain)] =
+                    binomial(p = p, n = n, k = hits) * originalChance
+        }
+        map
     }
 }
