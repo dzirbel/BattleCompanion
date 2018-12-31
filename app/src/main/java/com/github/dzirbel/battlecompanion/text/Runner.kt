@@ -86,12 +86,11 @@ private fun runSimulations(startingBoard: Board) {
 
     repeat(N) {
         var board = startingBoard
-        while (board.getOutcome() == null) {
+        while (board.outcome == null) {
             board = board.roll(rand)
         }
 
-        val outcome = board.getOutcome()!!
-        outcomes[outcome] = (outcomes[outcome] ?: 0) + 1
+        board.outcome?.let { outcome -> outcomes[outcome] = (outcomes[outcome] ?: 0) + 1 }
     }
 
     val duration = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start)

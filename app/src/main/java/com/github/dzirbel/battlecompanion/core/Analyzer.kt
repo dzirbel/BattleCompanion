@@ -18,7 +18,7 @@ object Analyzer {
     fun analyze(board: Board): Map<Outcome, Rational> {
         memo[board]?.let { return it }
 
-        board.getOutcome()?.let { outcome ->
+        board.outcome?.let { outcome ->
             return mapOf(outcome to Rational.ONE).also { memo[board] = it }
         }
 

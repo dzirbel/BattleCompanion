@@ -1,11 +1,20 @@
 package com.github.dzirbel.battlecompanion.core
 
+import kotlin.random.Random
+
+internal object Randoms {
+
+    val all = List(10) { Random(it) }
+}
+
 internal object CasualtyPickers {
 
     val default = CasualtyPicker.ByCost(isAttacking = true)
 }
 
 internal object Armies {
+
+    val empty = fromUnits(units = emptyMap())
 
     val all = listOf(
         fromUnits(

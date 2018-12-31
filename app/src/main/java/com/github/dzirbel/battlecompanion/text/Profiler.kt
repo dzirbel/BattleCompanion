@@ -118,7 +118,7 @@ private fun profileBattle(units: Map<UnitType, Int>, name: String): Long {
     )
     repeat(N) {
         var board = startingBoard
-        while (board.getOutcome() == null) {
+        while (board.outcome == null) {
             board = board.roll(rand)
         }
     }

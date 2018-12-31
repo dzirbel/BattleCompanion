@@ -7,7 +7,6 @@ import kotlin.random.Random
  *  [attackers] and [defenders].
  * Note that since [Army] is immutable, [Board] is as well.
  *
- * TODO tests
  * TODO listener system
  * TODO validity check (maybe only used in tests?) that land units aren't against sea units, etc
  */
@@ -17,10 +16,11 @@ data class Board(
 ) {
 
     /**
-     * Gets the outcome of the combat on this [Board], or null if the battle is not decided.
+     * The outcome of the combat on this [Board], or null if the battle is not decided (i.e. there
+     *  are still units on both sides).
      */
-    fun getOutcome(): Outcome? {
-        return when {
+    val outcome: Outcome? by lazy {
+        when {
             attackers.units.isEmpty() && defenders.units.isEmpty() -> Outcome.Tie
             attackers.units.isEmpty() && defenders.units.isNotEmpty() ->
                 Outcome.DefenderWon(defenders)
