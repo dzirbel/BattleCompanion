@@ -1,7 +1,8 @@
 package com.github.dzirbel.battlecompanion.core
 
-import com.github.dzirbel.battlecompanion.util.MultiSet
+import com.github.dzirbel.battlecompanion.util.multiSetOf
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ArmyTest {
@@ -13,11 +14,11 @@ class ArmyTest {
         assertEquals(
             Army(
                 units = mapOf(
-                    UnitType.INFANTRY to MultiSet(mapOf(1 to 3)),
-                    UnitType.TANK to MultiSet(mapOf(1 to 2)),
-                    UnitType.SUBMARINE to MultiSet(mapOf(1 to 4)),
-                    UnitType.ANTIAIRCRAFT_GUN to MultiSet(mapOf(1 to 1)),
-                    UnitType.BATTLESHIP to MultiSet(mapOf(2 to 3))
+                    UnitType.INFANTRY to multiSetOf(1 to 3),
+                    UnitType.TANK to multiSetOf(1 to 2),
+                    UnitType.SUBMARINE to multiSetOf(1 to 4),
+                    UnitType.ANTIAIRCRAFT_GUN to multiSetOf(1 to 1),
+                    UnitType.BATTLESHIP to multiSetOf(2 to 3)
                 ),
                 casualtyPicker = casualtyPicker
             ),
@@ -66,17 +67,64 @@ class ArmyTest {
 
     @Test
     fun testWithoutFirstRoundOnly() {
-        val army = Armies.fromUnits(
-            mapOf(
-                UnitType.INFANTRY to 3,
-                UnitType.ANTIAIRCRAFT_GUN to 1,
-                UnitType.BOMBARDING_BATTLESHIP to 1
-            )
-        )
+        Armies.all.forEach { army ->
+            val withoutFirstRoundOnly = army.withoutFirstRoundOnlyUnits()
+            UnitType.values().forEach { unitType ->
+                val count = withoutFirstRoundOnly.count { it == unitType }
+                if (unitType.firstRoundOnly) {
+                    assertEquals(0, count)
+                } else {
+                    assertEquals(army.count { it == unitType }, count)
+                }
+            }
+        }
+    }
 
-        assertEquals(
-            Armies.fromUnits(mapOf(UnitType.INFANTRY to 3)),
-            army.withoutFirstRoundOnlyUnits()
-        )
+    @Test
+    fun testRollHits() {
+        Randoms.all.forEach { rand ->
+            Armies.all.forEach { army ->
+                Armies.all.forEach { enemies ->
+                    listOf(true, false).forEach { isAttacking ->
+                        listOf(true, false).forEach { isOpeningFire ->
+                            val hits = army.rollHits(
+                                rand = rand,
+                                enemies = enemies,
+                                isAttacking = isAttacking,
+                                isOpeningFire = isOpeningFire
+                            )
+
+                            assertTrue(
+                                hits.generalHits <= maxHits(
+                                    army = army,
+                                    enemies = enemies,
+                                    domain = null,
+                                    isOpeningFire = isOpeningFire
+                                )
+                            )
+
+                            hits.domainHits.forEach { domain, domainHits ->
+                                assertTrue(
+                                    domainHits <= maxHits(
+                                        army = army,
+                                        enemies = enemies,
+                                        domain = domain,
+                                        isOpeningFire = isOpeningFire
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun maxHits(army: Army, enemies: Army, domain: Domain?, isOpeningFire: Boolean): Int {
+        return army.units.entries
+            .filter {
+                it.key.targetDomain == domain && it.key.hasOpeningFire(enemies) == isOpeningFire
+            }
+            .sumBy { it.value.size * it.key.numberOfRolls(enemies) }
     }
 }

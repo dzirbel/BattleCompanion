@@ -6,8 +6,6 @@ import java.util.EnumMap
  * A generic way for an [Army] to pick which units to lose as casualties when taking hits.
  * Standard implementations are provided for losing units based on cost, combat effectiveness, etc.
  *  and the interface allows for asynchronous user-entered choices.
- *
- * TODO improve tests
  */
 interface CasualtyPicker {
 
