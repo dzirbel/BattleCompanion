@@ -16,8 +16,8 @@ class Rational private constructor(
 
     constructor(p: Int, q: Int) : this(p = p.toBigInteger(), q = q.toBigInteger(), reduce = true)
 
-    val p: BigInteger
-    val q: BigInteger
+    private val p: BigInteger
+    private val q: BigInteger
 
     init {
         when {
