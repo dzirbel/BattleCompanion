@@ -346,20 +346,6 @@ internal class MultiSetTest {
         assertEquals(result, mapped)
     }
 
-    @Test
-    fun testToMultiSet() {
-        assertEquals(MultiSet<String>(), emptyList<String>().toMultiSet())
-        assertEquals(MultiSet(mapOf("a" to 1)), listOf("a").toMultiSet())
-        assertEquals(
-            MultiSet(mapOf("a" to 1, "b" to 1, "c" to 1)),
-            listOf("c", "b", "a").toMultiSet()
-        )
-        assertEquals(
-            MultiSet(mapOf("a" to 1, "b" to 2, "c" to 3)),
-            listOf("c", "b", "a", "c", "b", "c").toMultiSet()
-        )
-    }
-
     private fun <T> assertSameElements(a: List<T>, b: List<T>) {
         assertTrue(a.toMutableList().apply { b.forEach { remove(it) } }.isEmpty())
         assertTrue(b.toMutableList().apply { a.forEach { remove(it) } }.isEmpty())

@@ -1,11 +1,5 @@
 package com.github.dzirbel.battlecompanion.util
 
-fun <T> Iterable<T>.toMultiSet(): MultiSet<T> {
-    val counts = mutableMapOf<T, Int>()
-    forEach { element -> counts.compute(element) { _, value -> (value ?: 0) + 1 } }
-    return MultiSet(counts)
-}
-
 /**
  * Represents a set of [T]s, each of which may occur more than once.
  * Internally the [MultiSet] is stored as a [Map] from each element [T] to the number of times it
