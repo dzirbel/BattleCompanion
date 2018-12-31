@@ -1,33 +1,31 @@
 package com.github.dzirbel.battlecompanion.core
 
 import com.github.dzirbel.battlecompanion.util.Rational
-import java.math.BigInteger
 
 /**
- * Computes the factorial of [n], i.e. `1 * 2 * 3 * ... * n` as a [BigInteger] to avoid overflow.
+ * Computes the factorial of [n], i.e. `1 * 2 * 3 * ... * n` as a [Long] to avoid overflow.
  */
-fun factorial(n: Int): BigInteger {
-    var result = BigInteger.ONE
+fun factorial(n: Int): Long {
+    var result = 1L
     for (k in 2..n) {
-        result *= k.toBigInteger()
+        result *= k
     }
     return result
 }
 
 /**
- * Computes `n! / k!`, i.e. the factorial of [n] divided by the factorial of [k] (as a [BigInteger]
- *  to avoid overflow).
+ * Computes `n! / k!`, i.e. the factorial of [n] divided by the factorial of [k] (as a [Long] to
+ *  avoid overflow).
  * To avoid unnecessary multiplication, we compute the quotient by `(k+1) * (k+2) * ... * n`.
- * Returns [BigInteger.ONE] if [n] equals [k] and throws [IllegalArgumentException] if [n] is less
- *  than [k].
+ * Returns 1 if [n] equals [k] and throws [IllegalArgumentException] if [n] is less than [k].
  */
-fun factorialFrom(n: Int, k: Int): BigInteger {
+fun factorialFrom(n: Int, k: Int): Long {
     if (n < k) throw IllegalArgumentException()
-    if (n == k) return BigInteger.ONE
+    if (n == k) return 1L
 
-    var result = (k + 1).toBigInteger()
+    var result = (k + 1).toLong()
     for (j in (k + 2)..n) {
-        result *= j.toBigInteger()
+        result *= j
     }
     return result
 }
@@ -47,7 +45,7 @@ fun binomial(p: Rational, n: Int, k: Int): Rational {
             val coefficient =
                 factorialFrom(n = n, k = Math.max(k, n - k)) / factorial(Math.min(k, n - k))
 
-            (p.exp(k) * p.oneMinus().exp(n - k)) * coefficient
+            (p.exp(k) * p.oneMinus().exp(n - k)) * coefficient.toBigInteger()
         }
     }
 }
