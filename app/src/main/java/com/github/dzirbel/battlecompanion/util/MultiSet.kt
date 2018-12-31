@@ -1,5 +1,11 @@
 package com.github.dzirbel.battlecompanion.util
 
+fun <T> Iterable<T>.toMultiSet(): MultiSet<T> {
+    val counts = mutableMapOf<T, Int>()
+    forEach { element -> counts.compute(element) { _, value -> (value ?: 0) + 1 } }
+    return MultiSet(counts)
+}
+
 /**
  * Represents a set of [T]s, each of which may occur more than once.
  * Internally the [MultiSet] is stored as a [Map] from each element [T] to the number of times it
@@ -7,19 +13,6 @@ package com.github.dzirbel.battlecompanion.util
  * [MultiSet] is immutable.
  */
 class MultiSet<T>(counts: Map<T, Int> = mapOf()) : Collection<T> {
-
-    companion object {
-
-        /**
-         * Returns a [MultiSet] containing the elements of the given [List], including repetitions.
-         * TODO convert this to an Iterable.toMultiSet() extension function?
-         */
-        fun <T> fromList(list: List<T>): MultiSet<T> {
-            val counts = mutableMapOf<T, Int>()
-            list.forEach { element -> counts.compute(element) { _, value -> (value ?: 0) + 1 } }
-            return MultiSet(counts)
-        }
-    }
 
     private val counts: Map<T, Int> = counts.filterValues { it > 0 }
 
@@ -34,7 +27,40 @@ class MultiSet<T>(counts: Map<T, Int> = mapOf()) : Collection<T> {
 
     override fun isEmpty() = counts.isEmpty()
 
-    override fun iterator() = toList().iterator()
+    override fun iterator(): Iterator<T> {
+        return object : Iterator<T> {
+
+            val countIterator = counts.iterator()
+            var currentKey: T?
+            var currentKeyRemaining: Int
+
+            init {
+                if (countIterator.hasNext()) {
+                    val firstEntry = countIterator.next()
+                    currentKey = firstEntry.key
+                    currentKeyRemaining = firstEntry.value
+                } else {
+                    currentKey = null
+                    currentKeyRemaining = 0
+                }
+            }
+
+            override fun hasNext() = currentKeyRemaining > 0
+
+            override fun next(): T {
+                return currentKey?.also {
+                    currentKeyRemaining--
+                    if (currentKeyRemaining == 0) {
+                        if (countIterator.hasNext()) {
+                            val nextEntry = countIterator.next()
+                            currentKey = nextEntry.key
+                            currentKeyRemaining = nextEntry.value
+                        }
+                    }
+                } ?: throw NoSuchElementException()
+            }
+        }
+    }
 
     override fun hashCode() = counts.hashCode()
 
@@ -160,6 +186,12 @@ class MultiSet<T>(counts: Map<T, Int> = mapOf()) : Collection<T> {
      *  all the copies).
      */
     fun <R> map(mapper: (T) -> R): MultiSet<R> {
-        return MultiSet(toList().groupBy(mapper).mapValues { it.value.size })
+        val mapped = mutableMapOf<R, Int>()
+        counts.forEach { element, count ->
+            repeat(count) {
+                mapped.compute(mapper(element)) { _, prevCount -> (prevCount ?: 0) + 1 }
+            }
+        }
+        return MultiSet(mapped)
     }
 }

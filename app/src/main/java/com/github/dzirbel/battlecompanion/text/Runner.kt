@@ -14,14 +14,14 @@ import kotlin.random.Random
 private val attackers = Army.fromMap(
     casualtyPicker = CasualtyPicker.ByCost(isAttacking = true),
     units = mapOf(
-        UnitType.TANK to 5
+        UnitType.TANK to 15
     )
 )
 
 private val defenders = Army.fromMap(
     casualtyPicker = CasualtyPicker.ByCost(isAttacking = false),
     units = mapOf(
-        UnitType.TANK to 5
+        UnitType.TANK to 15
     )
 )
 
@@ -44,7 +44,7 @@ fun main() {
     )
 
     runAnalysis(board)
-    runSimulations(board)
+//    runSimulations(board)
 }
 
 private fun runAnalysis(startingBoard: Board) {

@@ -2,6 +2,7 @@ package com.github.dzirbel.battlecompanion.core
 
 import com.github.dzirbel.battlecompanion.util.MultiSet
 import com.github.dzirbel.battlecompanion.util.Rational
+import com.github.dzirbel.battlecompanion.util.toMultiSet
 import java.math.BigInteger
 
 /**
@@ -23,7 +24,7 @@ fun factor(n: BigInteger): MultiSet<Long> {
             currentFactor++
         }
     }
-    return MultiSet.fromList(factors)
+    return factors.toMultiSet()
 }
 
 /**

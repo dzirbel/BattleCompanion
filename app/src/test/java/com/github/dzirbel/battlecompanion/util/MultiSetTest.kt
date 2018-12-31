@@ -347,16 +347,16 @@ internal class MultiSetTest {
     }
 
     @Test
-    fun testFromList() {
-        assertEquals(MultiSet<String>(), MultiSet.fromList(emptyList<String>()))
-        assertEquals(MultiSet(mapOf("a" to 1)), MultiSet.fromList(listOf("a")))
+    fun testToMultiSet() {
+        assertEquals(MultiSet<String>(), emptyList<String>().toMultiSet())
+        assertEquals(MultiSet(mapOf("a" to 1)), listOf("a").toMultiSet())
         assertEquals(
             MultiSet(mapOf("a" to 1, "b" to 1, "c" to 1)),
-            MultiSet.fromList(listOf("c", "b", "a"))
+            listOf("c", "b", "a").toMultiSet()
         )
         assertEquals(
             MultiSet(mapOf("a" to 1, "b" to 2, "c" to 3)),
-            MultiSet.fromList(listOf("c", "b", "a", "c", "b", "c"))
+            listOf("c", "b", "a", "c", "b", "c").toMultiSet()
         )
     }
 
