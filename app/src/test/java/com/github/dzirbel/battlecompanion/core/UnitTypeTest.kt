@@ -8,6 +8,14 @@ import org.junit.Test
 class UnitTypeTest {
 
     @Test
+    fun testCombatPower() {
+        UnitType.values().forEach { unitType ->
+            assertEquals(unitType.attack, unitType.combatPower(isAttacking = true))
+            assertEquals(unitType.defense, unitType.combatPower(isAttacking = false))
+        }
+    }
+
+    @Test
     fun testNumberOfRolls() {
         UnitType.values().filter { it != UnitType.ANTIAIRCRAFT_GUN }.forEach { unitType ->
             Armies.all.forEach { army ->

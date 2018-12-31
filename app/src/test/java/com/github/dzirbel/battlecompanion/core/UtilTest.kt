@@ -79,5 +79,14 @@ class UtilTest {
             mapOf("a" to 6, "b" to 12),
             map.flatMapAndReduce(Int::plus) { _, value -> mapOf("a" to value, "b" to 2 * value) }
         )
+
+        assertEquals(
+            mapOf("a" to 2, "b" to 3, "bb" to 3, "c" to 4, "cc" to 4, "ccc" to 4),
+            map.flatMapAndReduce(Int::plus) { key, value ->
+                List(value) { index ->
+                    key.repeat(index + 1) to value + 1
+                }.toMap()
+            }
+        )
     }
 }

@@ -63,7 +63,7 @@ class HitProfileTest {
         generalHits: Int = 0,
         domainHits: Map<Domain, Int> = emptyMap()
     ) {
-        assertEquals(HitProfile(generalHits = generalHits, domainHits = domainHits), this)
+        assertEquals(this, HitProfile(generalHits = generalHits, domainHits = domainHits))
         assertEquals(this, this.plus(0, null))
         assertEquals(this, this.plus(0, Domain.LAND))
         assertEquals(this, this.plus(0, Domain.AIR))

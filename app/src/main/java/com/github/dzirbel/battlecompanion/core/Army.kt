@@ -14,6 +14,7 @@ import kotlin.random.Random
  * Note that [Army]s are immutable.
  *
  * TODO try to instantiate all instances of [units] as EnumMaps for performance?
+ * TODO improve tests
  */
 data class Army(
     val units: Map<UnitType, MultiSet<Int>>,

@@ -6,11 +6,10 @@ import kotlin.random.Random
  * Represents the state of the combat board at a specific time, which simply contains the
  *  [attackers] and [defenders].
  * Note that since [Army] is immutable, [Board] is as well.
- * TODO submarine submerging
- * TODO attackers retreating
+ *
+ * TODO tests
  * TODO listener system
  * TODO validity check (maybe only used in tests?) that land units aren't against sea units, etc
- * TODO industrial complex bombing?
  */
 data class Board(
     val attackers: Army,

@@ -4,6 +4,8 @@ import com.github.dzirbel.battlecompanion.util.Rational
 
 /**
  * Runs exact analysis of a [Board] to determine the distribution of [Outcome]s.
+ *
+ * TODO tests
  */
 object Analyzer {
 

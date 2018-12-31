@@ -46,7 +46,7 @@ class MathTest {
 
         assertEquals(9900, factorialFrom(n = 100, k = 98))
 
-        assertEquals((998 * 999 * 1000), factorialFrom(n = 1000, k = 997))
+        assertEquals(998 * 999 * 1000, factorialFrom(n = 1000, k = 997))
     }
 
     @Test
