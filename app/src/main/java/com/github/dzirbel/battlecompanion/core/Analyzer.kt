@@ -2,11 +2,18 @@ package com.github.dzirbel.battlecompanion.core
 
 import com.github.dzirbel.battlecompanion.util.Rational
 
+/**
+ * Runs exact analysis of a [Board] to determine the distribution of [Outcome]s.
+ */
 object Analyzer {
 
     private val memo = mutableMapOf<Board, Map<Outcome, Rational>>()
 
-    fun analyze(board: Board, recursions: Int = 0): Map<Outcome, Rational> {
+    /**
+     * Determines the distribution of [Outcome]s for the given [Board] as a map from each possible
+     *  [Outcome] to its probability.
+     */
+    fun analyze(board: Board): Map<Outcome, Rational> {
         memo[board]?.let { return it }
 
         board.getOutcome()?.let { outcome ->
@@ -24,12 +31,16 @@ object Analyzer {
             isOpeningFire = true
         )
 
+        // consider all combinations of opening fire hits; flat map each to an outcome distribution
+        //  and reduce, summing likelihoods for overlapping outcomes
         val outcomes = cross(
             attackerOpeningFireHitDistribution,
             defenderOpeningFireHitDistribution
         ).flatMapAndReduce(Rational::plus) { openingFireHitProfiles, openingFireChances ->
             val (attackerOpeningFireHits, defenderOpeningFireHits) = openingFireHitProfiles
             val openingFireChance = openingFireChances.first * openingFireChances.second
+            val openingFireIsEmpty = attackerOpeningFireHits.isEmpty() &&
+                    defenderOpeningFireHits.isEmpty()
 
             val remainingAttackers = board.attackers.takeHits(defenderOpeningFireHits)
             val remainingDefenders = board.defenders.takeHits(attackerOpeningFireHits)
@@ -45,15 +56,17 @@ object Analyzer {
                 isOpeningFire = false
             )
 
+            // similarly, consider all combinations of regular fire hits; flat map and reduce again
             cross(
                 attackerHitDistribution,
                 defenderHitDistribution
             ).flatMapAndReduce(Rational::plus) { hitProfiles, chances ->
                 val (attackerHits, defenderHits) = hitProfiles
 
-                if (attackerHits.isEmpty() && defenderHits.isEmpty() &&
-                    attackerOpeningFireHits.isEmpty() && defenderOpeningFireHits.isEmpty()
-                ) {
+                if (openingFireIsEmpty && attackerHits.isEmpty() && defenderHits.isEmpty()) {
+                    // if no hits were landed we have an identical board; to prevent infinite
+                    //  recursion we simply skip this possibility and normalize the probabilities at
+                    //  the end
                     emptyMap()
                 } else {
                     val totalChance = openingFireChance * chances.first * chances.second
@@ -67,12 +80,12 @@ object Analyzer {
                             .withoutFirstRoundOnlyUnits()
                     )
 
-                    analyze(afterHits, recursions = recursions + 1)
-                        .mapValues { (_, chance) -> chance * totalChance }
+                    analyze(afterHits).mapValues { (_, chance) -> chance * totalChance }
                 }
             }
         }
 
+        // normalize the probabilities since hit distributions with zero total hits were excluded
         val total = outcomes.values.reduce(Rational::plus)
         return outcomes.mapValues { it.value / total }.also { memo[board] = it }
     }
