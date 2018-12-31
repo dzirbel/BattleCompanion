@@ -1,5 +1,7 @@
 package com.github.dzirbel.battlecompanion.core
 
+import java.util.EnumMap
+
 /**
  * A generic way for an [Army] to pick which units to lose as casualties when taking hits.
  * Standard implementations are provided for losing units based on cost, combat effectiveness, etc.
@@ -37,6 +39,12 @@ interface CasualtyPicker {
         val tieBreaker: Comparator<UnitType> = Comparator.comparingInt { it.ordinal }
     }
 
+    /**
+     * A [CasualtyPicker] which determines which [UnitType]s to lose first based on the given
+     *  [comparator].
+     * A single invading unit (i.e. non-air unit, see [UnitType.canInvade]) can optionally be kept,
+     *  regardless of the [comparator], by toggling [keepInvadingUnit].
+     */
     abstract class ByComparator(
         private val comparator: Comparator<UnitType>,
         private val keepInvadingUnit: Boolean = false
@@ -52,7 +60,7 @@ interface CasualtyPicker {
                     null
                 }
 
-            val casualties = mutableMapOf<UnitType, Int>()
+            val casualties = EnumMap<UnitType, Int>(UnitType::class.java)
 
             fun pickForDomain(hits: Int, domain: Domain?) {
                 var remainingHits = hits
@@ -87,6 +95,12 @@ interface CasualtyPicker {
         }
     }
 
+    /**
+     * A [CasualtyPicker] which chooses the cheapest units to lose first, breaking ties based on
+     *  combat power.
+     * A single invading unit (i.e. non-air unit, see [UnitType.canInvade]) can optionally be kept,
+     *  regardless of cost, by toggling [keepInvadingUnit].
+     */
     class ByCost(isAttacking: Boolean, keepInvadingUnit: Boolean = false) : ByComparator(
         comparator = Comparators.cost
             .thenComparing(if (isAttacking) Comparators.attack else Comparators.defense)
@@ -94,6 +108,12 @@ interface CasualtyPicker {
         keepInvadingUnit = keepInvadingUnit
     )
 
+    /**
+     * A [CasualtyPicker] which chooses units with the lowest combat power to lose first, breaking
+     *  ties based on unit cost.
+     * A single invading unit (i.e. non-air unit, see [UnitType.canInvade]) can optionally be kept,
+     *  regardless of cost, by toggling [keepInvadingUnit].
+     */
     class ByCombatPower(isAttacking: Boolean, keepInvadingUnit: Boolean = false) : ByComparator(
         comparator = (if (isAttacking) Comparators.attack else Comparators.defense)
             .thenComparing(Comparators.cost)
