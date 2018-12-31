@@ -44,7 +44,7 @@ fun main() {
     )
 
     runAnalysis(board)
-//    runSimulations(board)
+    runSimulations(board)
 }
 
 private fun runAnalysis(startingBoard: Board) {
