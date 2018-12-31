@@ -15,8 +15,8 @@ fun factorial(n: Int): BigInteger {
 }
 
 /**
- * Computes `n! / k!`, i.e. the factorial of [n] divided by the factorial of [k] by a [BigInteger]
- *  to avoid overflow.
+ * Computes `n! / k!`, i.e. the factorial of [n] divided by the factorial of [k] (as a [BigInteger]
+ *  to avoid overflow).
  * To avoid unnecessary multiplication, we compute the quotient by `(k+1) * (k+2) * ... * n`.
  * Returns [BigInteger.ONE] if [n] equals [k] and throws [IllegalArgumentException] if [n] is less
  *  than [k].
