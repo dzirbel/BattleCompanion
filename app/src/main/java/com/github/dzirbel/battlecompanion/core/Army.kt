@@ -215,11 +215,13 @@ data class Army(
     private fun isWipedBy(hits: HitProfile): Boolean {
         val domainHpTaken = hits.domainHits.mapValues { (domain, domainHits) ->
             // this compute the total hp in the domain, not quite count()
-            val domainHp = units.filterKeys { it.domain == domain }.values.sumBy { it.sum() }
+            val domainHp = units.filterKeys {
+                it.domain == domain && !it.firstRoundOnly
+            }.values.sumBy { it.sum() }
             Math.min(domainHits, domainHp)
         }.values.sum()
 
-        val totalHp = units.values.sumBy { it.sum() }
+        val totalHp = units.filterKeys { !it.firstRoundOnly }.values.sumBy { it.sum() }
 
         return hits.generalHits >= totalHp - domainHpTaken
     }

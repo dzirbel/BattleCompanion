@@ -14,14 +14,19 @@ import kotlin.random.Random
 private val attackers = Army.fromMap(
     casualtyPicker = CasualtyPicker.ByCost(isAttacking = true),
     units = mapOf(
-        UnitType.TANK to 15
+        UnitType.INFANTRY to 5,
+        UnitType.TANK to 5,
+        UnitType.BOMBER to 2,
+        UnitType.BOMBARDING_BATTLESHIP to 1
     )
 )
 
 private val defenders = Army.fromMap(
     casualtyPicker = CasualtyPicker.ByCost(isAttacking = false),
     units = mapOf(
-        UnitType.TANK to 15
+        UnitType.INFANTRY to 10,
+        UnitType.TANK to 3,
+        UnitType.ANTIAIRCRAFT_GUN to 1
     )
 )
 
@@ -29,12 +34,12 @@ private const val N = 1_000_000
 
 fun main() {
     println("Attackers:")
-    attackers.units.forEach { (unitType, hps) ->
+    attackers.units.forEach { unitType, hps ->
         println("  ${unitType.prettyName} : ${hps.count()} | ${hps.toString { "${it}hp" }}")
     }
 
     println("Defenders:")
-    defenders.units.forEach { (unitType, hps) ->
+    defenders.units.forEach { unitType, hps ->
         println("  ${unitType.prettyName} : ${hps.count()} | ${hps.toString { "${it}hp" }}")
     }
 
