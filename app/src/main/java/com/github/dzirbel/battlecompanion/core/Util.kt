@@ -23,6 +23,17 @@ fun <K, V> cross(dim1: Map<K, V>, dim2: Map<K, V>): Map<Pair<K, K>, Pair<V, V>> 
 }
 
 /**
+ * Maps the values in this [Map] via [mapper], including only those which are not null.
+ */
+fun <K, V> Map<K, V>.mapValuesIgnoringNull(mapper: (Map.Entry<K, V>) -> V?): Map<K, V> {
+    val result = mutableMapOf<K, V>()
+    forEach { entry ->
+        mapper(entry)?.let { result[entry.key] = it }
+    }
+    return result
+}
+
+/**
  * Combines a [flatMap] and [reduce] into a single simpler and more performant operation.
  * The first step maps all the key-value pairs in this [Map] to [Map]s of their own via
  *  [flatMapper]; the second step gathers all of these [Map]s by key and reduces overlapping

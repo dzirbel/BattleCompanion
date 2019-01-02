@@ -8,7 +8,7 @@ package com.github.dzirbel.battlecompanion.util
  */
 class MultiSet<T>(counts: Map<T, Int> = mapOf()) : Collection<T> {
 
-    private val counts: Map<T, Int> = counts.filterValues { it > 0 }
+    val counts: Map<T, Int> = counts.filterValues { it > 0 }
 
     /**
      * The total number of elements stored in this [MultiSet], including multiples.

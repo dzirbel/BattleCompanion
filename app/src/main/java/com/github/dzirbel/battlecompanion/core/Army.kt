@@ -14,7 +14,6 @@ import kotlin.random.Random
  * Note that [Army]s are immutable.
  *
  * TODO try to instantiate all instances of [units] as EnumMaps for performance?
- * TODO improve tests
  */
 data class Army(
     val units: Map<UnitType, MultiSet<Int>>,
@@ -57,8 +56,9 @@ data class Army(
      * Returns the sum of the hps of the units whose [UnitType] satisfies the given [predicate].
      */
     fun totalHp(predicate: (UnitType) -> Boolean): Int {
-        // TODO make sure MultiSet<Int>.sum() is optimized
-        return units.entries.sumBy { if (predicate(it.key)) it.value.sum() else 0 }
+        return units.entries.sumBy { (unitType, hps) ->
+            if (predicate(unitType)) hps.counts.entries.sumBy { it.key * it.value } else 0
+        }
     }
 
     /**
@@ -172,12 +172,21 @@ data class Army(
         armyAfterDamage.checkCasualties(casualties = casualties, hits = hitsAfterDamage)
 
         return copy(
-            // TODO this can be optimized by building a MutableMap instead
-            units = armyAfterDamage.units.mapValues { (unitType, hps) ->
-                // remove only units with 1hp (which should be all of them at this point)
-                casualties[unitType]?.takeIf { it > 0 }
-                    ?.let { hps.minus(element = 1, n = it) } ?: hps
-            }.filterValues { it.isNotEmpty() }
+            units = armyAfterDamage.units.mapValuesIgnoringNull { (unitType, hps) ->
+                val casualtiesOfType = casualties[unitType] ?: 0
+                val possibleCasualties = hps.countOf(1)
+                when {
+                    casualtiesOfType == 0 -> hps
+                    casualtiesOfType > possibleCasualties ->
+                        throw CasualtyPicker.InvalidCasualtiesError.TooManyOfType(
+                            unitType = unitType,
+                            casualties = casualtiesOfType,
+                            units = hps.size
+                        )
+                    casualtiesOfType == possibleCasualties -> null
+                    else -> hps.minus(element = 1, n = casualtiesOfType)
+                }
+            }
         )
     }
 
@@ -281,19 +290,6 @@ data class Army(
                 casualties = remainingCasualties,
                 hits = remainingHits
             )
-        }
-
-        casualties.forEach { unitType, count ->
-            val unitsOfType = count(unitType)
-
-            // check we don't take more casualties of each type than the number of units
-            if (count > unitsOfType) {
-                throw CasualtyPicker.InvalidCasualtiesError.TooManyOfType(
-                    unitType = unitType,
-                    casualties = count,
-                    units = unitsOfType
-                )
-            }
         }
     }
 }
