@@ -45,8 +45,8 @@ class BoardTest {
 
                         board = board.roll(rand)
 
-                        assertTrue(board.attackers.units.none { it.key.firstRoundOnly })
-                        assertTrue(board.defenders.units.none { it.key.firstRoundOnly })
+                        assertTrue(board.attackers.units.keys.none { it.firstRoundOnly })
+                        assertTrue(board.defenders.units.keys.none { it.firstRoundOnly })
 
                         board.attackers.assertSubsetOf(prevAttackers)
                         board.defenders.assertSubsetOf(prevDefenders)

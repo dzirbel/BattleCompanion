@@ -38,11 +38,27 @@ data class Army(
     }
 
     /**
+     * Returns the total number of units of the given [UnitType], or 0 if it has no units of the
+     *  given [UnitType].
+     */
+    fun count(unitType: UnitType): Int {
+        return units[unitType]?.size ?: 0
+    }
+
+    /**
      * Returns the total number of [UnitType]s (of any hp) in this [Army] satisfying the given
      *  [predicate].
      */
     fun count(predicate: (UnitType) -> Boolean): Int {
-        return units.filterKeys(predicate).values.sumBy { it.size }
+        return units.entries.sumBy { if (predicate(it.key)) it.value.size else 0 }
+    }
+
+    /**
+     * Returns the sum of the hps of the units whose [UnitType] satisfies the given [predicate].
+     */
+    fun totalHp(predicate: (UnitType) -> Boolean): Int {
+        // TODO make sure MultiSet<Int>.sum() is optimized
+        return units.entries.sumBy { if (predicate(it.key)) it.value.sum() else 0 }
     }
 
     /**
@@ -50,7 +66,11 @@ data class Army(
      *  [UnitType.firstRoundOnly].
      */
     fun withoutFirstRoundOnlyUnits(): Army {
-        return copy(units = units.filterKeys { !it.firstRoundOnly })
+        return if (units.keys.any { it.firstRoundOnly }) {
+            copy(units = units.filterKeys { !it.firstRoundOnly })
+        } else {
+            this
+        }
     }
 
     /**
@@ -66,7 +86,7 @@ data class Army(
         var generalHits = 0
         val domainHits = EnumMap<Domain, Int>(Domain::class.java)
 
-        val supportingArtillery = if (isAttacking) count { it == UnitType.ARTILLERY } else 0
+        val supportingArtillery = if (isAttacking) count(UnitType.ARTILLERY) else 0
 
         units.forEach { unitType, hps ->
             if (unitType.hasOpeningFire(enemies = enemies) == isOpeningFire) {
@@ -107,7 +127,7 @@ data class Army(
     ): HitDistribution {
         var hitDistribution = emptyHitDistribution
 
-        val supportingArtillery = if (isAttacking) count { it == UnitType.ARTILLERY } else 0
+        val supportingArtillery = if (isAttacking) count(UnitType.ARTILLERY) else 0
 
         units.forEach { unitType, hps ->
             if (unitType.hasOpeningFire(enemies = enemies) == isOpeningFire) {
@@ -152,6 +172,7 @@ data class Army(
         armyAfterDamage.checkCasualties(casualties = casualties, hits = hitsAfterDamage)
 
         return copy(
+            // TODO this can be optimized by building a MutableMap instead
             units = armyAfterDamage.units.mapValues { (unitType, hps) ->
                 // remove only units with 1hp (which should be all of them at this point)
                 casualties[unitType]?.takeIf { it > 0 }
@@ -213,25 +234,19 @@ data class Army(
     }
 
     private fun isWipedBy(hits: HitProfile): Boolean {
-        val domainHpTaken = hits.domainHits.mapValues { (domain, domainHits) ->
-            // this compute the total hp in the domain, not quite count()
-            val domainHp = units.filterKeys {
-                it.domain == domain && !it.firstRoundOnly
-            }.values.sumBy { it.sum() }
+        val domainHpTaken = hits.domainHits.entries.sumBy { (domain, domainHits) ->
+            val domainHp = totalHp { it.domain == domain && !it.firstRoundOnly }
             Math.min(domainHits, domainHp)
-        }.values.sum()
+        }
 
-        val totalHp = units.filterKeys { !it.firstRoundOnly }.values.sumBy { it.sum() }
-
+        val totalHp = totalHp { !it.firstRoundOnly }
         return hits.generalHits >= totalHp - domainHpTaken
     }
 
     private fun checkCasualties(casualties: Map<UnitType, Int>, hits: HitProfile) {
         var possibleDomainHits = 0
         hits.domainHits.forEach { domain, count ->
-            val unitsInDomain = units.entries.sumBy {
-                if (it.key.domain == domain && !it.key.firstRoundOnly) it.value.size else 0
-            }
+            val unitsInDomain = count { it.domain == domain && !it.firstRoundOnly }
             val casualtiesInDomain = casualties.entries.sumBy {
                 if (it.key.domain == domain) it.value else 0
             }
@@ -250,9 +265,7 @@ data class Army(
         }
 
         val remainingCasualties = casualties.values.sum() - possibleDomainHits
-        val totalUnits = units.entries.sumBy { (unitType, hps) ->
-            if (unitType.firstRoundOnly) 0 else hps.size
-        }
+        val totalUnits = count { !it.firstRoundOnly }
         val remainingHits = hits.generalHits
 
         // check that the total number of casualties (minus the domain-specific hits) is at least
@@ -266,7 +279,7 @@ data class Army(
         }
 
         casualties.forEach { unitType, count ->
-            val unitsOfType = units[unitType]?.size ?: 0
+            val unitsOfType = count(unitType)
 
             // check we don't take more casualties of each type than the number of units
             if (count > unitsOfType) {
