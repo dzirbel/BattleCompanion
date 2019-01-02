@@ -1,5 +1,6 @@
 package com.github.dzirbel.battlecompanion.core
 
+import com.github.dzirbel.battlecompanion.util.Rational
 import com.github.dzirbel.battlecompanion.util.multiSetOf
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -36,7 +37,7 @@ class ArmyTest {
     }
 
     @Test
-    fun testCount() {
+    fun testCountAndTotalHp() {
         val units = mapOf(
             UnitType.INFANTRY to 3,
             UnitType.ARTILLERY to 2,
@@ -56,13 +57,23 @@ class ArmyTest {
         assertEquals(24, army.count { true })
         assertEquals(0, army.count { false })
 
-        units.forEach { (unitType, count) ->
+        assertEquals(25, army.totalHp { true })
+        assertEquals(0, army.totalHp { false })
+
+        UnitType.values().forEach { unitType ->
+            val count = units[unitType] ?: 0
             assertEquals(count, army.count { it == unitType })
+            assertEquals(count, army.count(unitType = unitType))
+            assertEquals(count * unitType.maxHp, army.totalHp { it == unitType })
         }
 
         assertEquals(11, army.count { it.domain == Domain.LAND })
         assertEquals(4, army.count { it.domain == Domain.AIR })
         assertEquals(9, army.count { it.domain == Domain.SEA })
+
+        assertEquals(11, army.totalHp { it.domain == Domain.LAND })
+        assertEquals(4, army.totalHp { it.domain == Domain.AIR })
+        assertEquals(10, army.totalHp { it.domain == Domain.SEA })
     }
 
     @Test
@@ -118,6 +129,88 @@ class ArmyTest {
                 }
             }
         }
+    }
+
+    @Test
+    fun testGetHitDistributionEmpty() {
+        listOf(true, false).forEach { isAttacking ->
+            listOf(true, false).forEach { isOpeningFire ->
+                assertEquals(
+                    emptyHitDistribution,
+                    Armies.empty.getHitDistribution(
+                        enemies = Armies.empty,
+                        isAttacking = isAttacking,
+                        isOpeningFire = isOpeningFire
+                    )
+                )
+            }
+        }
+    }
+
+    @Test
+    fun testGetHitDistributionSingleton() {
+        val army = Armies.fromUnits(mapOf(UnitType.INFANTRY to 1))
+
+        assertEmptyHitDistribution(army = army, isOpeningFire = true)
+        assertEquals(
+            emptyHitDistribution.plusBinomial(domain = null, p = Rational(1, 6), n = 1),
+            army.getHitDistribution(enemies = army, isAttacking = true, isOpeningFire = false)
+        )
+        assertEquals(
+            emptyHitDistribution.plusBinomial(domain = null, p = Rational(1, 3), n = 1),
+            army.getHitDistribution(enemies = army, isAttacking = false, isOpeningFire = false)
+        )
+    }
+
+    @Test
+    fun testGetHitDistributionArtilleryAndInfantry() {
+        val army = Armies.fromUnits(mapOf(UnitType.INFANTRY to 2, UnitType.ARTILLERY to 1))
+
+        assertEmptyHitDistribution(army = army, isOpeningFire = true)
+        assertEquals(
+            emptyHitDistribution
+                .plusBinomial(domain = null, p = Rational(1, 3), n = 2)
+                .plusBinomial(domain = null, p = Rational(1, 6), n = 1),
+            army.getHitDistribution(enemies = army, isAttacking = true, isOpeningFire = false)
+        )
+        assertEquals(
+            emptyHitDistribution.plusBinomial(domain = null, p = Rational(1, 3), n = 3),
+            army.getHitDistribution(enemies = army, isAttacking = false, isOpeningFire = false)
+        )
+    }
+
+    @Test
+    fun testGetHitDistributionSubmarine() {
+        val army = Armies.fromUnits(mapOf(UnitType.SUBMARINE to 1))
+
+        assertEmptyHitDistribution(army = army, isOpeningFire = false)
+        assertEquals(
+            emptyHitDistribution.plusBinomial(domain = Domain.SEA, p = Rational(1, 3), n = 1),
+            army.getHitDistribution(enemies = army, isAttacking = true, isOpeningFire = true)
+        )
+        assertEquals(
+            emptyHitDistribution.plusBinomial(domain = Domain.SEA, p = Rational(1, 3), n = 1),
+            army.getHitDistribution(enemies = army, isAttacking = false, isOpeningFire = true)
+        )
+    }
+
+    private fun assertEmptyHitDistribution(army: Army, isOpeningFire: Boolean) {
+        assertEquals(
+            emptyHitDistribution,
+            army.getHitDistribution(
+                enemies = army,
+                isAttacking = true,
+                isOpeningFire = isOpeningFire
+            )
+        )
+        assertEquals(
+            emptyHitDistribution,
+            army.getHitDistribution(
+                enemies = army,
+                isAttacking = false,
+                isOpeningFire = isOpeningFire
+            )
+        )
     }
 
     private fun maxHits(army: Army, enemies: Army, domain: Domain?, isOpeningFire: Boolean): Int {
