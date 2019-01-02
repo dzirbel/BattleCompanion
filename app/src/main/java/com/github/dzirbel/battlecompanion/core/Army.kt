@@ -186,10 +186,10 @@ data class Army(
         var remainingHits = hits
         hits.domainHits.forEach { (domain, count) ->
             if (count > 0) {
-                val (armyAfterDamage, countAfterDamage) = takeDamage(count, domain)
+                val (armyAfterDamage, countAfterDamage) = remainingArmy.takeDamage(count, domain)
                 if (countAfterDamage != count) {
                     remainingArmy = armyAfterDamage
-                    remainingHits = hits.copy(
+                    remainingHits = remainingHits.copy(
                         domainHits = hits.domainHits.plus(domain to countAfterDamage)
                     )
                 }
@@ -197,10 +197,11 @@ data class Army(
         }
 
         if (hits.generalHits > 0) {
-            val (armyAfterDamage, countAfterDamage) = takeDamage(hits.generalHits, null)
+            val (armyAfterDamage, countAfterDamage) =
+                    remainingArmy.takeDamage(hits.generalHits, null)
             if (countAfterDamage != hits.generalHits) {
                 remainingArmy = armyAfterDamage
-                remainingHits = hits.copy(generalHits = countAfterDamage)
+                remainingHits = remainingHits.copy(generalHits = countAfterDamage)
             }
         }
 
@@ -208,7 +209,11 @@ data class Army(
     }
 
     private fun takeDamage(hits: Int, domain: Domain?): Pair<Army, Int> {
-        if (units.all { (domain != null && it.key.domain != domain) || it.value.hasOnly(1) }) {
+        if (units.all {
+                it.key.firstRoundOnly || (domain != null && it.key.domain != domain) ||
+                        it.value.hasOnly(1)
+            }
+        ) {
             return Pair(this, hits)
         }
 

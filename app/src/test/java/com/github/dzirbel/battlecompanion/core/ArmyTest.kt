@@ -194,6 +194,104 @@ class ArmyTest {
         )
     }
 
+    @Test
+    fun testTakeHitsEmpty() {
+        Armies.all.forEach { army ->
+            assertEquals(army, army.takeHits(HitProfile(generalHits = 0, domainHits = mapOf())))
+        }
+    }
+
+    @Test
+    fun testTakeHitsOverwhelming() {
+        Armies.all.forEach { army ->
+            assertEquals(
+                Armies.empty,
+                army.takeHits(HitProfile(generalHits = army.totalHp { true }, domainHits = mapOf()))
+            )
+
+            assertEquals(
+                Armies.empty,
+                army.takeHits(
+                    HitProfile(
+                        generalHits = 0,
+                        domainHits = Domain.values().map { domain ->
+                            domain to army.totalHp { it.domain == domain }
+                        }.toMap()
+                    )
+                )
+            )
+        }
+    }
+
+    @Test
+    fun testTakeHitsJustDamage() {
+        val army = Armies.fromUnits(
+            mapOf(
+                UnitType.BATTLESHIP to 5,
+                UnitType.DESTROYER to 5
+            )
+        )
+
+        assertEquals(
+            army.copy(
+                units = mapOf(
+                    UnitType.BATTLESHIP to multiSetOf(2 to 1, 1 to 4),
+                    UnitType.DESTROYER to multiSetOf(1 to 5)
+                )
+            ),
+            army.takeHits(HitProfile(generalHits = 2, domainHits = mapOf(Domain.SEA to 2)))
+        )
+    }
+
+    @Test
+    fun testTakeHitsMixed() {
+        val army = Army.fromMap(
+            casualtyPicker = CasualtyPicker.ByCombatPower(isAttacking = true),
+            units = mapOf(
+                UnitType.INFANTRY to 4,             // takes 2 land hits and 2 general hits
+                UnitType.ARTILLERY to 1,            // takes 1 general hit
+                UnitType.TANK to 3,
+
+                UnitType.FIGHTER to 2,              // takes 1 air hit
+                UnitType.BOMBER to 1,
+
+                UnitType.BATTLESHIP to 2,           // takes 2 sea hits (as damage)
+                UnitType.AIRCRAFT_CARRIER to 1,     // takes 1 sea hit
+                UnitType.SUBMARINE to 1,
+
+                UnitType.ANTIAIRCRAFT_GUN to 1,
+                UnitType.BOMBARDING_BATTLESHIP to 2
+            )
+        )
+
+        assertEquals(
+            army.copy(
+                units = mapOf(
+                    UnitType.TANK to multiSetOf(1 to 3),
+
+                    UnitType.FIGHTER to multiSetOf(1 to 1),
+                    UnitType.BOMBER to multiSetOf(1 to 1),
+
+                    UnitType.BATTLESHIP to multiSetOf(1 to 2),
+                    UnitType.SUBMARINE to multiSetOf(1 to 1),
+
+                    UnitType.ANTIAIRCRAFT_GUN to multiSetOf(1 to 1),
+                    UnitType.BOMBARDING_BATTLESHIP to multiSetOf(1 to 2)
+                )
+            ),
+            army.takeHits(
+                HitProfile(
+                    generalHits = 3,
+                    domainHits = mapOf(
+                        Domain.SEA to 3,
+                        Domain.LAND to 2,
+                        Domain.AIR to 1
+                    )
+                )
+            )
+        )
+    }
+
     private fun assertEmptyHitDistribution(army: Army, isOpeningFire: Boolean) {
         assertEquals(
             emptyHitDistribution,
