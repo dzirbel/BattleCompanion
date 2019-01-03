@@ -15,7 +15,7 @@ interface CasualtyPicker {
      * This function is only called when the [army] is not completely wiped out by the [hits], i.e.
      *  there is a real choice.
      */
-    fun pick(army: Army, hits: HitProfile): Map<UnitType, Int>
+    fun pick(army: Army, hits: HitProfile, isAttacking: Boolean): Map<UnitType, Int>
 
     sealed class InvalidCasualtiesError : Throwable() {
 
@@ -34,25 +34,33 @@ interface CasualtyPicker {
 
     private object Comparators {
         val cost: Comparator<UnitType> = Comparator.comparingInt { it.cost }
-        val attack: Comparator<UnitType> = Comparator.comparingInt { it.attack }
-        val defense: Comparator<UnitType> = Comparator.comparingInt { it.defense }
         val tieBreaker: Comparator<UnitType> = Comparator.comparingInt { it.ordinal }
+
+        fun combatPower(
+            isAttacking: Boolean,
+            weaponDevelopments: Set<WeaponDevelopment>
+        ): Comparator<UnitType> {
+            return Comparator.comparingInt {
+                it.combatPower(isAttacking = isAttacking, weaponDevelopments = weaponDevelopments)
+            }
+        }
     }
 
     /**
-     * A [CasualtyPicker] which determines which [UnitType]s to lose first based on the given
-     *  [comparator].
+     * A [CasualtyPicker] which determines which [UnitType]s to lose first based on the [Comparator]
+     *  returned by [comparatorGetter].
      * A single invading unit (i.e. non-air unit, see [UnitType.canInvade]) can optionally be kept,
-     *  regardless of the [comparator], by toggling [keepInvadingUnit].
+     *  regardless of the [Comparator], by toggling [keepInvadingUnit].
      *
      * TODO option to always save transports?
      */
     abstract class ByComparator(
-        private val comparator: Comparator<UnitType>,
+        private val comparatorGetter: (Boolean, Set<WeaponDevelopment>) -> Comparator<UnitType>,
         private val keepInvadingUnit: Boolean = false
     ) : CasualtyPicker {
 
-        override fun pick(army: Army, hits: HitProfile): Map<UnitType, Int> {
+        override fun pick(army: Army, hits: HitProfile, isAttacking: Boolean): Map<UnitType, Int> {
+            val comparator = comparatorGetter(isAttacking, army.weaponDevelopments)
             val sortedUnits = army.units.toSortedMap(comparator)
 
             val bestInvadingUnit =
@@ -103,10 +111,17 @@ interface CasualtyPicker {
      * A single invading unit (i.e. non-air unit, see [UnitType.canInvade]) can optionally be kept,
      *  regardless of cost, by toggling [keepInvadingUnit].
      */
-    class ByCost(isAttacking: Boolean, keepInvadingUnit: Boolean = false) : ByComparator(
-        comparator = Comparators.cost
-            .thenComparing(if (isAttacking) Comparators.attack else Comparators.defense)
-            .thenComparing(Comparators.tieBreaker),
+    class ByCost(keepInvadingUnit: Boolean = false) : ByComparator(
+        comparatorGetter = { isAttacking, weaponDevelopments ->
+            Comparators.cost
+                .thenComparing(
+                    Comparators.combatPower(
+                        isAttacking = isAttacking,
+                        weaponDevelopments = weaponDevelopments
+                    )
+                )
+                .thenComparing(Comparators.tieBreaker)
+        },
         keepInvadingUnit = keepInvadingUnit
     )
 
@@ -116,10 +131,15 @@ interface CasualtyPicker {
      * A single invading unit (i.e. non-air unit, see [UnitType.canInvade]) can optionally be kept,
      *  regardless of cost, by toggling [keepInvadingUnit].
      */
-    class ByCombatPower(isAttacking: Boolean, keepInvadingUnit: Boolean = false) : ByComparator(
-        comparator = (if (isAttacking) Comparators.attack else Comparators.defense)
-            .thenComparing(Comparators.cost)
-            .thenComparing(Comparators.tieBreaker),
+    class ByCombatPower(keepInvadingUnit: Boolean = false) : ByComparator(
+        comparatorGetter = { isAttacking, weaponDevelopments ->
+            Comparators.combatPower(
+                isAttacking = isAttacking,
+                weaponDevelopments = weaponDevelopments
+            )
+                .thenComparing(Comparators.cost)
+                .thenComparing(Comparators.tieBreaker)
+        },
         keepInvadingUnit = keepInvadingUnit
     )
 }

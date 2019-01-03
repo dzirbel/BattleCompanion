@@ -10,8 +10,14 @@ class UnitTypeTest {
     @Test
     fun testCombatPower() {
         UnitType.values().forEach { unitType ->
-            assertEquals(unitType.attack, unitType.combatPower(isAttacking = true))
-            assertEquals(unitType.defense, unitType.combatPower(isAttacking = false))
+            assertEquals(
+                unitType.attack,
+                unitType.combatPower(isAttacking = true, weaponDevelopments = emptySet())
+            )
+            assertEquals(
+                unitType.defense,
+                unitType.combatPower(isAttacking = false, weaponDevelopments = emptySet())
+            )
         }
     }
 
@@ -19,35 +25,52 @@ class UnitTypeTest {
     fun testNumberOfRolls() {
         UnitType.values().filter { it != UnitType.ANTIAIRCRAFT_GUN }.forEach { unitType ->
             Armies.all.forEach { army ->
-                assertEquals(1, unitType.numberOfRolls(army))
+                listOf(true, false).forEach { isAttacking ->
+                    assertEquals(
+                        1,
+                        unitType.numberOfRolls(
+                            enemies = army,
+                            isAttacking = isAttacking,
+                            weaponDevelopments = emptySet()
+                        )
+                    )
+                }
             }
         }
 
         assertEquals(
             0,
             UnitType.ANTIAIRCRAFT_GUN.numberOfRolls(
-                Armies.armyWithAirUnits(fighters = 0, bombers = 0)
+                enemies = Armies.armyWithAirUnits(fighters = 0, bombers = 0),
+                isAttacking = false,
+                weaponDevelopments = emptySet()
             )
         )
 
         assertEquals(
             2,
             UnitType.ANTIAIRCRAFT_GUN.numberOfRolls(
-                Armies.armyWithAirUnits(fighters = 2)
+                enemies = Armies.armyWithAirUnits(fighters = 2),
+                isAttacking = false,
+                weaponDevelopments = emptySet()
             )
         )
 
         assertEquals(
             2,
             UnitType.ANTIAIRCRAFT_GUN.numberOfRolls(
-                Armies.armyWithAirUnits(bombers = 2)
+                enemies = Armies.armyWithAirUnits(bombers = 2),
+                isAttacking = false,
+                weaponDevelopments = emptySet()
             )
         )
 
         assertEquals(
             5,
             UnitType.ANTIAIRCRAFT_GUN.numberOfRolls(
-                Armies.armyWithAirUnits(fighters = 3, bombers = 2)
+                enemies = Armies.armyWithAirUnits(fighters = 3, bombers = 2),
+                isAttacking = false,
+                weaponDevelopments = emptySet()
             )
         )
     }

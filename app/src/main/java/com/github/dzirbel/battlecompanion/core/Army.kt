@@ -17,7 +17,9 @@ import kotlin.random.Random
  */
 data class Army(
     val units: Map<UnitType, MultiSet<Int>>,
-    val casualtyPicker: CasualtyPicker
+    val isAttacking: Boolean,
+    val casualtyPicker: CasualtyPicker,
+    val weaponDevelopments: Set<WeaponDevelopment>
 ) {
 
     companion object {
@@ -26,12 +28,19 @@ data class Army(
          * Returns an [Army] with the given [casualtyPicker] and  [units] as a map from the
          *  [UnitType] to the number of units, all initialized to their respective [UnitType.maxHp].
          */
-        fun fromMap(units: Map<UnitType, Int>, casualtyPicker: CasualtyPicker): Army {
+        fun fromMap(
+            units: Map<UnitType, Int>,
+            isAttacking: Boolean,
+            casualtyPicker: CasualtyPicker,
+            weaponDevelopments: Set<WeaponDevelopment>
+        ): Army {
             return Army(
                 units = units
                     .filterValues { it > 0 }
                     .mapValues { (unitType, count) -> MultiSet(mapOf(unitType.maxHp to count)) },
-                casualtyPicker = casualtyPicker
+                isAttacking = isAttacking,
+                casualtyPicker = casualtyPicker,
+                weaponDevelopments = weaponDevelopments
             )
         }
     }
@@ -77,12 +86,7 @@ data class Army(
      * Computes the [HitProfile] that this [Army] inflicts in a single round, rolling with the given
      *  [Random].
      */
-    fun rollHits(
-        rand: Random,
-        enemies: Army,
-        isAttacking: Boolean,
-        isOpeningFire: Boolean
-    ): HitProfile {
+    fun rollHits(rand: Random, enemies: Army, isOpeningFire: Boolean): HitProfile {
         var generalHits = 0
         val domainHits = EnumMap<Domain, Int>(Domain::class.java)
 
@@ -91,7 +95,11 @@ data class Army(
         units.forEach { unitType, hps ->
             if (unitType.hasOpeningFire(enemies = enemies) == isOpeningFire) {
                 fun roll(count: Int, rollLimit: Int) {
-                    val rolls = count * unitType.numberOfRolls(enemies = enemies)
+                    val rolls = count * unitType.numberOfRolls(
+                        enemies = enemies,
+                        isAttacking = isAttacking,
+                        weaponDevelopments = weaponDevelopments
+                    )
                     val hits = rand.rollDice(rolls).count { it <= rollLimit }
                     if (unitType.targetDomain == null) {
                         generalHits += hits
@@ -107,10 +115,22 @@ data class Army(
                     val supportedInfantry = Math.min(remainingCount, supportingArtillery)
                     remainingCount -= supportedInfantry
 
-                    roll(count = supportedInfantry, rollLimit = UnitType.ARTILLERY.attack)
+                    roll(
+                        count = supportedInfantry,
+                        rollLimit = UnitType.ARTILLERY.combatPower(
+                            isAttacking = isAttacking,
+                            weaponDevelopments = weaponDevelopments
+                        )
+                    )
                 }
 
-                roll(count = remainingCount, rollLimit = unitType.combatPower(isAttacking))
+                roll(
+                    count = remainingCount,
+                    rollLimit = unitType.combatPower(
+                        isAttacking = isAttacking,
+                        weaponDevelopments = weaponDevelopments
+                    )
+                )
             }
         }
 
@@ -120,11 +140,7 @@ data class Army(
     /**
      * Computes the distribution of hits that this [Army] inflicts in a single round.
      */
-    fun getHitDistribution(
-        enemies: Army,
-        isAttacking: Boolean,
-        isOpeningFire: Boolean
-    ): HitDistribution {
+    fun getHitDistribution(enemies: Army, isOpeningFire: Boolean): HitDistribution {
         var hitDistribution = emptyHitDistribution
 
         val supportingArtillery = if (isAttacking) count(UnitType.ARTILLERY) else 0
@@ -132,7 +148,11 @@ data class Army(
         units.forEach { unitType, hps ->
             if (unitType.hasOpeningFire(enemies = enemies) == isOpeningFire) {
                 fun addHits(count: Int, rollLimit: Int) {
-                    val rolls = count * unitType.numberOfRolls(enemies = enemies)
+                    val rolls = count * unitType.numberOfRolls(
+                        enemies = enemies,
+                        isAttacking = isAttacking,
+                        weaponDevelopments = weaponDevelopments
+                    )
                     hitDistribution = hitDistribution.plusBinomial(
                         domain = unitType.targetDomain,
                         p = Rational(rollLimit, 6),
@@ -146,10 +166,22 @@ data class Army(
                     val supportedInfantry = Math.min(remainingCount, supportingArtillery)
                     remainingCount -= supportedInfantry
 
-                    addHits(count = supportedInfantry, rollLimit = UnitType.ARTILLERY.attack)
+                    addHits(
+                        count = supportedInfantry,
+                        rollLimit = UnitType.ARTILLERY.combatPower(
+                            isAttacking = isAttacking,
+                            weaponDevelopments = weaponDevelopments
+                        )
+                    )
                 }
 
-                addHits(count = remainingCount, rollLimit = unitType.combatPower(isAttacking))
+                addHits(
+                    count = remainingCount,
+                    rollLimit = unitType.combatPower(
+                        isAttacking = isAttacking,
+                        weaponDevelopments = weaponDevelopments
+                    )
+                )
             }
         }
 
@@ -168,7 +200,11 @@ data class Army(
         val (armyAfterDamage, hitsAfterDamage) = takeDamage(hits)
 
         // then have the CasualtyPicker pick which units take the casualties and apply them
-        val casualties = casualtyPicker.pick(army = armyAfterDamage, hits = hitsAfterDamage)
+        val casualties = casualtyPicker.pick(
+            army = armyAfterDamage,
+            hits = hitsAfterDamage,
+            isAttacking = isAttacking
+        )
         armyAfterDamage.checkCasualties(casualties = casualties, hits = hitsAfterDamage)
 
         return copy(

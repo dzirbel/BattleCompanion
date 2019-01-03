@@ -9,6 +9,9 @@ import kotlin.random.Random
  *
  * TODO listener system
  * TODO validity check (maybe only used in tests?) that land units aren't against sea units, etc
+ *      also: bombarding destroyers only with development, no attacking aa guns, only one defending
+ *            aa gun, no defending bombarding ships, attackers.isAttacking is true and
+ *            defenders.isAttacking is false
  */
 data class Board(
     val attackers: Army,
@@ -38,13 +41,11 @@ data class Board(
         val attackerOpeningFire = attackers.rollHits(
             rand = rand,
             enemies = defenders,
-            isAttacking = true,
             isOpeningFire = true
         )
         val defenderOpeningFire = defenders.rollHits(
             rand = rand,
             enemies = attackers,
-            isAttacking = false,
             isOpeningFire = true
         )
 
@@ -54,13 +55,11 @@ data class Board(
         val attackerHits = remainingAttackers.rollHits(
             rand = rand,
             enemies = remainingDefenders,
-            isAttacking = true,
             isOpeningFire = false
         )
         val defenderHits = remainingDefenders.rollHits(
             rand = rand,
             enemies = remainingAttackers,
-            isAttacking = false,
             isOpeningFire = false
         )
 

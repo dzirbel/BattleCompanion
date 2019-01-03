@@ -12,22 +12,26 @@ import kotlin.math.log10
 import kotlin.random.Random
 
 private val attackers = Army.fromMap(
-    casualtyPicker = CasualtyPicker.ByCost(isAttacking = true),
     units = mapOf(
         UnitType.INFANTRY to 5,
         UnitType.TANK to 5,
         UnitType.BOMBER to 2,
         UnitType.BOMBARDING_BATTLESHIP to 1
-    )
+    ),
+    isAttacking = true,
+    casualtyPicker = CasualtyPicker.ByCost(),
+    weaponDevelopments = setOf()
 )
 
 private val defenders = Army.fromMap(
-    casualtyPicker = CasualtyPicker.ByCost(isAttacking = false),
     units = mapOf(
         UnitType.INFANTRY to 10,
         UnitType.TANK to 3,
         UnitType.ANTIAIRCRAFT_GUN to 1
-    )
+    ),
+    isAttacking = false,
+    casualtyPicker = CasualtyPicker.ByCost(),
+    weaponDevelopments = setOf()
 )
 
 private const val N = 1_000_000

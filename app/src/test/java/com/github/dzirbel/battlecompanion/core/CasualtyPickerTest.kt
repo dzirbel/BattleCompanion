@@ -6,16 +6,14 @@ import org.junit.Test
 class CasualtyPickerTest {
 
     private val army = Armies.fromUnits(
-        mapOf(
-            UnitType.INFANTRY to 3,
-            UnitType.TANK to 3,
-            UnitType.ANTIAIRCRAFT_GUN to 1,
-            UnitType.FIGHTER to 2,
-            UnitType.BOMBER to 2,
-            UnitType.TRANSPORT to 2,
-            UnitType.AIRCRAFT_CARRIER to 2,
-            UnitType.BATTLESHIP to 1
-        )
+        UnitType.INFANTRY to 3,
+        UnitType.TANK to 3,
+        UnitType.ANTIAIRCRAFT_GUN to 1,
+        UnitType.FIGHTER to 2,
+        UnitType.BOMBER to 2,
+        UnitType.TRANSPORT to 2,
+        UnitType.AIRCRAFT_CARRIER to 2,
+        UnitType.BATTLESHIP to 1
     )
 
     private val lightHits = HitProfile(
@@ -47,7 +45,7 @@ class CasualtyPickerTest {
 
     @Test
     fun testByCost() {
-        val casualtyPicker = CasualtyPicker.ByCost(isAttacking = true)
+        val casualtyPicker = CasualtyPicker.ByCost()
 
         assertEquals(
             mapOf(
@@ -55,7 +53,7 @@ class CasualtyPickerTest {
                 UnitType.FIGHTER to 1,
                 UnitType.TRANSPORT to 1
             ),
-            casualtyPicker.pick(army, lightHits)
+            casualtyPicker.pick(army = army, hits = lightHits, isAttacking = true)
         )
 
         assertEquals(
@@ -65,7 +63,7 @@ class CasualtyPickerTest {
                 UnitType.FIGHTER to 2,
                 UnitType.TRANSPORT to 2
             ),
-            casualtyPicker.pick(army, mediumHits)
+            casualtyPicker.pick(army = army, hits = mediumHits, isAttacking = true)
         )
 
         assertEquals(
@@ -77,13 +75,13 @@ class CasualtyPickerTest {
                 UnitType.TRANSPORT to 2,
                 UnitType.AIRCRAFT_CARRIER to 1
             ),
-            casualtyPicker.pick(army, heavyHits)
+            casualtyPicker.pick(army = army, hits = heavyHits, isAttacking = true)
         )
     }
 
     @Test
     fun testByCombatPower() {
-        val casualtyPicker = CasualtyPicker.ByCombatPower(isAttacking = true)
+        val casualtyPicker = CasualtyPicker.ByCombatPower()
 
         assertEquals(
             mapOf(
@@ -91,7 +89,7 @@ class CasualtyPickerTest {
                 UnitType.FIGHTER to 1,
                 UnitType.TRANSPORT to 2
             ),
-            casualtyPicker.pick(army, lightHits)
+            casualtyPicker.pick(army = army, hits = lightHits, isAttacking = true)
         )
 
         assertEquals(
@@ -101,7 +99,7 @@ class CasualtyPickerTest {
                 UnitType.TRANSPORT to 2,
                 UnitType.AIRCRAFT_CARRIER to 2
             ),
-            casualtyPicker.pick(army, mediumHits)
+            casualtyPicker.pick(army = army, hits = mediumHits, isAttacking = true)
         )
 
         assertEquals(
@@ -113,18 +111,16 @@ class CasualtyPickerTest {
                 UnitType.TRANSPORT to 2,
                 UnitType.AIRCRAFT_CARRIER to 2
             ),
-            casualtyPicker.pick(army, heavyHits)
+            casualtyPicker.pick(army = army, hits = heavyHits, isAttacking = true)
         )
     }
 
     @Test
     fun testByCombatPowerDefending() {
-        val casualtyPicker = CasualtyPicker.ByCombatPower(isAttacking = false)
+        val casualtyPicker = CasualtyPicker.ByCombatPower()
         val army = Armies.fromUnits(
-            mapOf(
-                UnitType.INFANTRY to 3,
-                UnitType.BOMBER to 3
-            )
+            UnitType.INFANTRY to 3,
+            UnitType.BOMBER to 3
         )
 
         val hits = HitProfile(
@@ -141,20 +137,18 @@ class CasualtyPickerTest {
                 UnitType.INFANTRY to 2,
                 UnitType.BOMBER to 3
             ),
-            casualtyPicker.pick(army, hits)
+            casualtyPicker.pick(army = army, hits = hits, isAttacking = false)
         )
     }
 
     @Test
     fun testByCostKeepInvading() {
-        val casualtyPicker = CasualtyPicker.ByCost(isAttacking = true, keepInvadingUnit = true)
+        val casualtyPicker = CasualtyPicker.ByCost(keepInvadingUnit = true)
         val army = Armies.fromUnits(
-            mapOf(
-                UnitType.INFANTRY to 2,
-                UnitType.TANK to 2,
-                UnitType.FIGHTER to 5,
-                UnitType.BOMBER to 1
-            )
+            UnitType.INFANTRY to 2,
+            UnitType.TANK to 2,
+            UnitType.FIGHTER to 5,
+            UnitType.BOMBER to 1
         )
 
         val hits = HitProfile(
@@ -170,7 +164,7 @@ class CasualtyPickerTest {
                 UnitType.TANK to 1,
                 UnitType.FIGHTER to 3
             ),
-            casualtyPicker.pick(army, hits)
+            casualtyPicker.pick(army = army, hits = hits, isAttacking = true)
         )
     }
 }

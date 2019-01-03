@@ -13,18 +13,24 @@ class BoardTest {
     fun testOutcome() {
         assertEquals(Outcome.Tie, emptyBoard.outcome)
 
-        Armies.all.forEach { army ->
+        Armies.attackers.forEach { attackers ->
             assertEquals(
-                Outcome.AttackerWon(remaining = army),
-                Board(attackers = army, defenders = Armies.empty).outcome
+                Outcome.AttackerWon(remaining = attackers),
+                Board(attackers = attackers, defenders = Armies.empty).outcome
             )
+        }
 
+        Armies.defenders.forEach { defenders ->
             assertEquals(
-                Outcome.DefenderWon(remaining = army),
-                Board(attackers = Armies.empty, defenders = army).outcome
+                Outcome.DefenderWon(remaining = defenders),
+                Board(attackers = Armies.empty, defenders = defenders).outcome
             )
+        }
 
-            assertNull(Board(attackers = army, defenders = army).outcome)
+        Armies.attackers.forEach { attackers ->
+            Armies.defenders.forEach { defenders ->
+                assertNull(Board(attackers = attackers, defenders = defenders).outcome)
+            }
         }
     }
 
@@ -33,8 +39,8 @@ class BoardTest {
         Randoms.all.forEach { rand ->
             assertEquals(emptyBoard, emptyBoard.roll(rand))
 
-            Armies.all.forEach { attackers ->
-                Armies.all.forEach { defenders ->
+            Armies.attackers.forEach { attackers ->
+                Armies.defenders.forEach { defenders ->
                     var board = Board(attackers = attackers, defenders = defenders)
                     var prevAttackers: Army
                     var prevDefenders: Army

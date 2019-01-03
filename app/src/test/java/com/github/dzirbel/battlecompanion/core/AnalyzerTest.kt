@@ -14,73 +14,86 @@ class AnalyzerTest {
             Analyzer.analyze(Board(attackers = Armies.empty, defenders = Armies.empty))
         )
 
-        Armies.all.forEach { army ->
+        Armies.attackers.forEach { attackers ->
             assertEquals(
-                mapOf(Outcome.AttackerWon(remaining = army) to Rational.ONE),
-                Analyzer.analyze(Board(attackers = army, defenders = Armies.empty))
+                mapOf(Outcome.AttackerWon(remaining = attackers) to Rational.ONE),
+                Analyzer.analyze(Board(attackers = attackers, defenders = Armies.empty))
             )
+        }
 
+        Armies.defenders.forEach { defenders ->
             assertEquals(
-                mapOf(Outcome.DefenderWon(remaining = army) to Rational.ONE),
-                Analyzer.analyze(Board(attackers = Armies.empty, defenders = army))
+                mapOf(Outcome.DefenderWon(remaining = defenders) to Rational.ONE),
+                Analyzer.analyze(Board(attackers = Armies.empty, defenders = defenders))
             )
         }
     }
 
     @Test
     fun testTankOneOnOne() {
-        val army = Armies.fromUnits(mapOf(UnitType.TANK to 1))
+        val attackers = Armies.fromUnits(UnitType.TANK to 1, isAttacking = true)
+        val defenders = Armies.fromUnits(UnitType.TANK to 1, isAttacking = false)
 
         assertEquals(
             mapOf(
-                Outcome.AttackerWon(remaining = army) to Rational(1, 3),
-                Outcome.DefenderWon(remaining = army) to Rational(1, 3),
+                Outcome.AttackerWon(remaining = attackers) to Rational(1, 3),
+                Outcome.DefenderWon(remaining = defenders) to Rational(1, 3),
                 Outcome.Tie to Rational(1, 3)
             ),
-            Analyzer.analyze(Board(attackers = army, defenders = army))
+            Analyzer.analyze(Board(attackers = attackers, defenders = defenders))
         )
     }
 
     @Test
     fun testInfantryOneOnOne() {
-        val army = Armies.fromUnits(mapOf(UnitType.INFANTRY to 1))
+        val attackers = Armies.fromUnits(UnitType.INFANTRY to 1, isAttacking = true)
+        val defenders = Armies.fromUnits(UnitType.INFANTRY to 1, isAttacking = false)
 
         assertEquals(
             mapOf(
-                Outcome.AttackerWon(remaining = army) to Rational(1, 4),
-                Outcome.DefenderWon(remaining = army) to Rational(5, 8),
+                Outcome.AttackerWon(remaining = attackers) to Rational(1, 4),
+                Outcome.DefenderWon(remaining = defenders) to Rational(5, 8),
                 Outcome.Tie to Rational(1, 8)
             ),
-            Analyzer.analyze(Board(attackers = army, defenders = army))
+            Analyzer.analyze(Board(attackers = attackers, defenders = defenders))
         )
     }
 
     @Test
     fun testSubmarineOneOnOne() {
-        val army = Armies.fromUnits(mapOf(UnitType.SUBMARINE to 1))
+        val attackers = Armies.fromUnits(UnitType.SUBMARINE to 1, isAttacking = true)
+        val defenders = Armies.fromUnits(UnitType.SUBMARINE to 1, isAttacking = false)
 
         assertEquals(
             mapOf(
-                Outcome.AttackerWon(remaining = army) to Rational(2, 5),
-                Outcome.DefenderWon(remaining = army) to Rational(2, 5),
+                Outcome.AttackerWon(remaining = attackers) to Rational(2, 5),
+                Outcome.DefenderWon(remaining = defenders) to Rational(2, 5),
                 Outcome.Tie to Rational(1, 5)
             ),
-            Analyzer.analyze(Board(attackers = army, defenders = army))
+            Analyzer.analyze(Board(attackers = attackers, defenders = defenders))
         )
     }
 
     @Test
     fun testInfantryTankVersusInfantryArtillery() {
-        val attackers = Armies.fromUnits(mapOf(UnitType.INFANTRY to 1, UnitType.TANK to 1))
-        val defenders = Armies.fromUnits(mapOf(UnitType.INFANTRY to 1, UnitType.ARTILLERY to 1))
+        val attackers = Armies.fromUnits(
+            UnitType.INFANTRY to 1,
+            UnitType.TANK to 1,
+            isAttacking = true
+        )
+        val defenders = Armies.fromUnits(
+            UnitType.INFANTRY to 1,
+            UnitType.ARTILLERY to 1,
+            isAttacking = false
+        )
 
         assertEquals(
             mapOf(
                 Outcome.AttackerWon(
-                    remaining = Armies.fromUnits(mapOf(UnitType.TANK to 1))
+                    remaining = Armies.fromUnits(UnitType.TANK to 1, isAttacking = true)
                 ) to Rational(1257, 4004),
                 Outcome.DefenderWon(
-                    remaining = Armies.fromUnits(mapOf(UnitType.ARTILLERY to 1))
+                    remaining = Armies.fromUnits(UnitType.ARTILLERY to 1, isAttacking = false)
                 ) to Rational(1977, 8008),
                 Outcome.AttackerWon(remaining = attackers) to Rational(5, 26),
                 Outcome.DefenderWon(remaining = defenders) to Rational(85, 616),
@@ -92,13 +105,13 @@ class AnalyzerTest {
 
     @Test
     fun testBattleshipVersusDestroyers() {
-        val attackers = Armies.fromUnits(mapOf(UnitType.BATTLESHIP to 1))
-        val defenders = Armies.fromUnits(mapOf(UnitType.DESTROYER to 2))
+        val attackers = Armies.fromUnits(UnitType.BATTLESHIP to 1, isAttacking = true)
+        val defenders = Armies.fromUnits(UnitType.DESTROYER to 2, isAttacking = false)
 
         assertEquals(
             mapOf(
                 Outcome.DefenderWon(
-                    remaining = Armies.fromUnits(mapOf(UnitType.DESTROYER to 1))
+                    remaining = Armies.fromUnits(UnitType.DESTROYER to 1, isAttacking = false)
                 ) to Rational(1112, 3025),
                 Outcome.AttackerWon(
                     remaining = attackers.copy(
@@ -115,14 +128,14 @@ class AnalyzerTest {
 
     @Test
     fun testBattleshipVersusSubmarines() {
-        val attackers = Armies.fromUnits(mapOf(UnitType.BATTLESHIP to 1))
-        val defenders = Armies.fromUnits(mapOf(UnitType.SUBMARINE to 3))
+        val attackers = Armies.fromUnits(UnitType.BATTLESHIP to 1, isAttacking = true)
+        val defenders = Armies.fromUnits(UnitType.SUBMARINE to 3, isAttacking = false)
 
         assertEquals(
             mapOf(
                 Outcome.DefenderWon(remaining = defenders) to Rational(2217, 5329),
                 Outcome.DefenderWon(
-                    remaining = Armies.fromUnits(mapOf(UnitType.SUBMARINE to 2))
+                    remaining = Armies.fromUnits(UnitType.SUBMARINE to 2, isAttacking = false)
                 ) to Rational(821352, 2819041),
                 Outcome.AttackerWon(
                     remaining = attackers.copy(
@@ -130,7 +143,7 @@ class AnalyzerTest {
                     )
                 ) to Rational(20947968, 138133009),
                 Outcome.DefenderWon(
-                    remaining = Armies.fromUnits(mapOf(UnitType.SUBMARINE to 1))
+                    remaining = Armies.fromUnits(UnitType.SUBMARINE to 1, isAttacking = false)
                 ) to Rational(13454400, 138133009),
                 Outcome.AttackerWon(remaining = attackers) to Rational(512, 11753)
             ),

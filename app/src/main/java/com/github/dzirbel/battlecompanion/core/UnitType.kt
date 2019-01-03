@@ -1,9 +1,5 @@
 package com.github.dzirbel.battlecompanion.core
 
-// TODO techs
-// TODO attacking aa guns can never be destroyed
-// TODO multiple defending aa guns
-// TODO don't allow defending bombarding battleships (although they technically work?)
 enum class UnitType(
     val domain: Domain,
     val attack: Int,
@@ -50,6 +46,14 @@ enum class UnitType(
         firstRoundOnly = true,
         targetDomain = Domain.LAND
     ),
+    BOMBARDING_DESTROYER(
+        domain = Domain.LAND,
+        attack = 3,
+        defense = 0,
+        cost = 12,
+        firstRoundOnly = true,
+        targetDomain = Domain.LAND
+    ),
 
     FIGHTER(domain = Domain.AIR, attack = 3, defense = 4, cost = 10),
     BOMBER(domain = Domain.AIR, attack = 4, defense = 1, cost = 15),
@@ -75,16 +79,28 @@ enum class UnitType(
      * Determines the attack or defense value of this [UnitType] for the given attacking role, i.e.
      *  [attack] if [isAttacking] is true and [defense] otherwise.
      */
-    fun combatPower(isAttacking: Boolean): Int {
-        return if (isAttacking) attack else defense
+    fun combatPower(isAttacking: Boolean, weaponDevelopments: Set<WeaponDevelopment>): Int {
+        return when {
+            this == FIGHTER && !isAttacking &&
+                    weaponDevelopments.contains(WeaponDevelopment.JET_FIGHTERS) -> 5
+            this == SUBMARINE && isAttacking &&
+                    weaponDevelopments.contains(WeaponDevelopment.SUPER_SUBMARINES) -> 3
+            else -> if (isAttacking) attack else defense
+        }
     }
 
     /**
      * Determines the number of dice this unit should throw each round against the given [Army].
      */
-    fun numberOfRolls(enemies: Army): Int {
-        return when (this) {
-            ANTIAIRCRAFT_GUN -> enemies.count { it.domain == Domain.AIR }
+    fun numberOfRolls(
+        enemies: Army,
+        isAttacking: Boolean,
+        weaponDevelopments: Set<WeaponDevelopment>
+    ): Int {
+        return when {
+            this == ANTIAIRCRAFT_GUN -> enemies.count { it.domain == Domain.AIR }
+            this == BOMBER && isAttacking &&
+                    weaponDevelopments.contains(WeaponDevelopment.HEAVY_BOMBERS) -> 2
             else -> 1
         }
     }

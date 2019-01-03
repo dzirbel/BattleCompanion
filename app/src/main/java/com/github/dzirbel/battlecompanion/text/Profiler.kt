@@ -4,6 +4,7 @@ import com.github.dzirbel.battlecompanion.core.Army
 import com.github.dzirbel.battlecompanion.core.Board
 import com.github.dzirbel.battlecompanion.core.CasualtyPicker
 import com.github.dzirbel.battlecompanion.core.UnitType
+import com.github.dzirbel.battlecompanion.core.WeaponDevelopment
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -11,8 +12,11 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
-private val attackerCasualtyPicker = CasualtyPicker.ByCost(isAttacking = true)
-private val defenderCasualtyPicker = CasualtyPicker.ByCost(isAttacking = false)
+private val attackerWeaponDevelopments = setOf<WeaponDevelopment>()
+private val defenderWeaponDevelopments = setOf<WeaponDevelopment>()
+
+private val attackerCasualtyPicker = CasualtyPicker.ByCost()
+private val defenderCasualtyPicker = CasualtyPicker.ByCost()
 
 private val smallArmy = mapOf(
     UnitType.INFANTRY to 1,
@@ -113,8 +117,18 @@ private fun profileBattle(units: Map<UnitType, Int>, name: String): Long {
     val start = System.nanoTime()
 
     val startingBoard = Board(
-        attackers = Army.fromMap(units = units, casualtyPicker = attackerCasualtyPicker),
-        defenders = Army.fromMap(units = units, casualtyPicker = defenderCasualtyPicker)
+        attackers = Army.fromMap(
+            units = units,
+            isAttacking = true,
+            casualtyPicker = attackerCasualtyPicker,
+            weaponDevelopments = attackerWeaponDevelopments
+        ),
+        defenders = Army.fromMap(
+            units = units,
+            isAttacking = false,
+            casualtyPicker = defenderCasualtyPicker,
+            weaponDevelopments = defenderWeaponDevelopments
+        )
     )
     repeat(N) {
         var board = startingBoard

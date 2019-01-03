@@ -22,12 +22,10 @@ object Analyzer {
 
         val attackerOpeningFireHitDistribution = board.attackers.getHitDistribution(
             enemies = board.defenders,
-            isAttacking = true,
             isOpeningFire = true
         )
         val defenderOpeningFireHitDistribution = board.defenders.getHitDistribution(
             enemies = board.attackers,
-            isAttacking = false,
             isOpeningFire = true
         )
 
@@ -47,12 +45,10 @@ object Analyzer {
 
             val attackerHitDistribution = remainingAttackers.getHitDistribution(
                 enemies = remainingDefenders,
-                isAttacking = true,
                 isOpeningFire = false
             )
             val defenderHitDistribution = remainingDefenders.getHitDistribution(
                 enemies = remainingAttackers,
-                isAttacking = false,
                 isOpeningFire = false
             )
 
