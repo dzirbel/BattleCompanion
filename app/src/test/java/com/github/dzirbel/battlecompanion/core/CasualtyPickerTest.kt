@@ -18,29 +18,17 @@ class CasualtyPickerTest {
 
     private val lightHits = HitProfile(
         generalHits = 2,
-        domainHits = mapOf(
-            Domain.LAND to 1,
-            Domain.SEA to 1,
-            Domain.AIR to 1
-        )
+        domainHits = mapOf(Domain.LAND to 1, Domain.SEA to 1, Domain.AIR to 1)
     )
 
     private val mediumHits = HitProfile(
         generalHits = 3,
-        domainHits = mapOf(
-            Domain.LAND to 2,
-            Domain.SEA to 2,
-            Domain.AIR to 2
-        )
+        domainHits = mapOf(Domain.LAND to 2, Domain.SEA to 2, Domain.AIR to 2)
     )
 
     private val heavyHits = HitProfile(
         generalHits = 3,
-        domainHits = mapOf(
-            Domain.LAND to 3,
-            Domain.SEA to 3,
-            Domain.AIR to 3
-        )
+        domainHits = mapOf(Domain.LAND to 3, Domain.SEA to 3, Domain.AIR to 3)
     )
 
     @Test
@@ -125,11 +113,7 @@ class CasualtyPickerTest {
 
         val hits = HitProfile(
             generalHits = 3,
-            domainHits = mapOf(
-                Domain.LAND to 1,
-                Domain.SEA to 1,
-                Domain.AIR to 1
-            )
+            domainHits = mapOf(Domain.LAND to 1, Domain.SEA to 1, Domain.AIR to 1)
         )
 
         assertEquals(
@@ -151,12 +135,7 @@ class CasualtyPickerTest {
             UnitType.BOMBER to 1
         )
 
-        val hits = HitProfile(
-            generalHits = 4,
-            domainHits = mapOf(
-                Domain.LAND to 2
-            )
-        )
+        val hits = HitProfile(generalHits = 4, domainHits = mapOf(Domain.LAND to 2))
 
         assertEquals(
             mapOf(
@@ -165,6 +144,69 @@ class CasualtyPickerTest {
                 UnitType.FIGHTER to 3
             ),
             casualtyPicker.pick(army = army, hits = hits, isAttacking = true)
+        )
+    }
+
+    @Test
+    fun testByCostKeepTransports() {
+        val casualtyPicker = CasualtyPicker.ByCost(keepTransports = true)
+        val army = Armies.fromUnits(
+            UnitType.TRANSPORT to 3,
+            UnitType.SUBMARINE to 3,
+            UnitType.DESTROYER to 2,
+            UnitType.BATTLESHIP to 1
+        )
+
+        val hits1 = HitProfile(
+            generalHits = 1,
+            domainHits = mapOf(Domain.SEA to 1)
+        )
+
+        assertEquals(
+            mapOf(UnitType.SUBMARINE to 2),
+            casualtyPicker.pick(army = army, hits = hits1, isAttacking = true)
+        )
+
+        val hits2 = HitProfile(
+            generalHits = 2,
+            domainHits = mapOf(Domain.SEA to 2)
+        )
+
+        assertEquals(
+            mapOf(
+                UnitType.SUBMARINE to 3,
+                UnitType.DESTROYER to 1
+            ),
+            casualtyPicker.pick(army = army, hits = hits2, isAttacking = true)
+        )
+
+        val hits3 = HitProfile(
+            generalHits = 3,
+            domainHits = mapOf(Domain.SEA to 3)
+        )
+
+        assertEquals(
+            mapOf(
+                UnitType.SUBMARINE to 3,
+                UnitType.DESTROYER to 2,
+                UnitType.BATTLESHIP to 1
+            ),
+            casualtyPicker.pick(army = army, hits = hits3, isAttacking = true)
+        )
+
+        val hits4 = HitProfile(
+            generalHits = 4,
+            domainHits = mapOf(Domain.SEA to 4)
+        )
+
+        assertEquals(
+            mapOf(
+                UnitType.SUBMARINE to 3,
+                UnitType.DESTROYER to 2,
+                UnitType.BATTLESHIP to 1,
+                UnitType.TRANSPORT to 2
+            ),
+            casualtyPicker.pick(army = army, hits = hits4, isAttacking = true)
         )
     }
 }
