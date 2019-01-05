@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">Battle Companion</string>
+
+    <string name="attackers_header">Attackers</string>
+    <string name="defenders_header">Defenders</string>
+
+    <string name="analysis_button">Analysis</string>
+    <string name="roll_button">Roll</string>
+    <string name="land">Land</string>
+    <string name="sea">Sea</string>
 </resources>
