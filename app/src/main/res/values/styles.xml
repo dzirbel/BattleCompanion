@@ -6,9 +6,16 @@
     </style>
 
     <style name="Button" parent="Base.Widget.AppCompat.Button.Borderless">
+        <item name="android:minHeight">0dp</item>
+        <item name="android:padding">14dp</item>
         <item name="android:foreground">?android:selectableItemBackground</item>
         <item name="android:background">@null</item>
         <item name="android:textColor">@color/text</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Button.Small" parent="Button">
+        <item name="android:padding">6dp</item>
     </style>
 
     <style name="Button.Primary" parent="Button">

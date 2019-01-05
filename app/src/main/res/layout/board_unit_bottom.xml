@@ -4,19 +4,34 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="10dp">
+    android:paddingBottom="10dp">
 
-    <TextView
+    <Button
         android:id="@+id/unitCount"
+        style="@style/Button.Small"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
-        android:gravity="center"
-        android:textColor="@color/text"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@id/unitName"
+        app:layout_constraintBottom_toTopOf="@id/plusOne"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="3" />
+
+    <Button
+        android:id="@+id/plusOne"
+        style="@style/Button.Small"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/plus_one"
+        app:layout_constraintBottom_toTopOf="@id/minusOne"
+        app:layout_constraintTop_toBottomOf="@id/unitCount" />
+
+    <Button
+        android:id="@+id/minusOne"
+        style="@style/Button.Small"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/minus_one"
+        app:layout_constraintBottom_toTopOf="@id/unitName"
+        app:layout_constraintTop_toBottomOf="@id/plusOne" />
 
     <com.github.dzirbel.battlecompanion.ui.VerticalTextView
         android:id="@+id/unitName"
@@ -27,7 +42,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/unitCount"
+        app:layout_constraintTop_toBottomOf="@id/minusOne"
         tools:text="Infantry" />
 
 </android.support.constraint.ConstraintLayout>

@@ -4,19 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="10dp">
-
-    <TextView
-        android:id="@+id/unitCount"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:gravity="center"
-        android:textColor="@color/text"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/unitName"
-        tools:text="3" />
+    android:paddingTop="10dp">
 
     <com.github.dzirbel.battlecompanion.ui.VerticalTextView
         android:id="@+id/unitName"
@@ -24,10 +12,37 @@
         android:layout_height="0dp"
         android:textColor="@color/text"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@id/unitCount"
+        app:layout_constraintBottom_toTopOf="@id/minusOne"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="Infantry" />
+
+    <Button
+        android:id="@+id/minusOne"
+        style="@style/Button.Small"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/minus_one"
+        app:layout_constraintBottom_toTopOf="@id/plusOne"
+        app:layout_constraintTop_toBottomOf="@id/unitName" />
+
+    <Button
+        android:id="@+id/plusOne"
+        style="@style/Button.Small"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/plus_one"
+        app:layout_constraintBottom_toTopOf="@id/unitCount"
+        app:layout_constraintTop_toBottomOf="@id/minusOne" />
+
+    <Button
+        android:id="@+id/unitCount"
+        style="@style/Button.Small"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/plusOne"
+        tools:text="3" />
 
 </android.support.constraint.ConstraintLayout>
