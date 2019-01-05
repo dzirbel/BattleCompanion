@@ -17,18 +17,16 @@ class BoardActivity : AppCompatActivity() {
         defenderUnits.layoutManager = ColumnLayoutManager(this)
 
         domainGroup.setOnCheckedChangeListener { _, checkedId ->
-            when (checkedId) {
-                R.id.land -> setDomains(setOf(Domain.LAND, Domain.AIR))
-                R.id.sea -> setDomains(setOf(Domain.SEA, Domain.AIR))
+            val domains = when (checkedId) {
+                R.id.land -> setOf(Domain.LAND, Domain.AIR)
+                R.id.sea -> setOf(Domain.SEA, Domain.AIR)
                 else -> throw IllegalArgumentException()
             }
+
+            attackerUnits.adapter = UnitTypeAdapter(top = true, domains = domains)
+            defenderUnits.adapter = UnitTypeAdapter(top = false, domains = domains)
         }
 
         domainGroup.check(R.id.land)
-    }
-
-    private fun setDomains(domains: Set<Domain>) {
-        attackerUnits.adapter = UnitTypeAdapter(top = true, domains = domains)
-        defenderUnits.adapter = UnitTypeAdapter(top = false, domains = domains)
     }
 }
