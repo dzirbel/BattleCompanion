@@ -9,7 +9,7 @@ class UnitTypeViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
     fun bind(unitType: UnitType) {
         itemView.apply {
-            unitName.text = unitType.prettyName
+            unitName.text = unitType.shortName
             unitCount.text = "0"
         }
     }

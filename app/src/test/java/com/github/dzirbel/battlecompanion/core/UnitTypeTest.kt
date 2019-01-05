@@ -108,4 +108,51 @@ class UnitTypeTest {
         assertFalse(UnitType.FIGHTER.canInvade())
         assertFalse(UnitType.BOMBER.canInvade())
     }
+
+    @Test
+    fun testHasRequiredWeaponDevelopments() {
+        UnitType.values().filter { it != UnitType.BOMBARDING_DESTROYER }.forEach { unitType ->
+            assertTrue(unitType.hasRequiredWeaponDevelopments(emptySet()))
+        }
+
+        assertFalse(UnitType.BOMBARDING_DESTROYER.hasRequiredWeaponDevelopments(emptySet()))
+        assertTrue(
+            UnitType.BOMBARDING_DESTROYER.hasRequiredWeaponDevelopments(
+                setOf(WeaponDevelopment.COMBINED_BOMBARDMENT)
+            )
+        )
+    }
+
+    @Test
+    fun testCanAttackIn() {
+        listOf(Domain.LAND, Domain.SEA).forEach { domain ->
+            UnitType.values().forEach { unitType ->
+                when (unitType) {
+                    UnitType.ANTIAIRCRAFT_GUN -> assertFalse(unitType.canAttackIn(domain))
+                    else -> assertEquals(
+                        unitType.domain == Domain.AIR || unitType.domain == domain,
+                        unitType.canAttackIn(domain)
+                    )
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testCanDefendIn() {
+        listOf(Domain.LAND, Domain.SEA).forEach { domain ->
+            UnitType.values().forEach { unitType ->
+                when (unitType) {
+                    UnitType.BOMBARDING_BATTLESHIP -> assertFalse(unitType.canDefendIn(domain))
+                    UnitType.BOMBARDING_DESTROYER -> assertFalse(unitType.canDefendIn(domain))
+                    UnitType.BOMBER ->
+                        assertEquals(domain == Domain.LAND, unitType.canDefendIn(domain))
+                    else -> assertEquals(
+                        unitType.domain == Domain.AIR || unitType.domain == domain,
+                        unitType.canDefendIn(domain)
+                    )
+                }
+            }
+        }
+    }
 }

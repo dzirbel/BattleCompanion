@@ -70,7 +70,7 @@ fun main() {
         armies.forEach { name, army ->
             logln("  $name")
             army.forEach { (unitType, count) ->
-                logln("    $count of ${unitType.prettyName}")
+                logln("    $count of ${unitType.fullName}")
             }
             logln()
         }

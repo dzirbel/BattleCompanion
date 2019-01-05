@@ -30,6 +30,22 @@ enum class UnitType(
     INFANTRY(domain = Domain.LAND, attack = 1, defense = 2, cost = 3),
     ARTILLERY(domain = Domain.LAND, attack = 2, defense = 2, cost = 4),
     TANK(domain = Domain.LAND, attack = 3, defense = 3, cost = 5),
+
+    TRANSPORT(domain = Domain.SEA, attack = 0, defense = 1, cost = 8),
+    SUBMARINE(
+        domain = Domain.SEA,
+        attack = 2,
+        defense = 2,
+        cost = 8,
+        targetDomain = Domain.SEA
+    ),
+    DESTROYER(domain = Domain.SEA, attack = 3, defense = 3, cost = 12),
+    AIRCRAFT_CARRIER(domain = Domain.SEA, attack = 1, defense = 3, cost = 16),
+    BATTLESHIP(domain = Domain.SEA, attack = 4, defense = 4, cost = 24, maxHp = 2),
+
+    FIGHTER(domain = Domain.AIR, attack = 3, defense = 4, cost = 10),
+    BOMBER(domain = Domain.AIR, attack = 4, defense = 1, cost = 15),
+
     ANTIAIRCRAFT_GUN(
         domain = Domain.LAND,
         attack = 0,
@@ -53,27 +69,21 @@ enum class UnitType(
         cost = 12,
         firstRoundOnly = true,
         targetDomain = Domain.LAND
-    ),
+    );
 
-    FIGHTER(domain = Domain.AIR, attack = 3, defense = 4, cost = 10),
-    BOMBER(domain = Domain.AIR, attack = 4, defense = 1, cost = 15),
-
-    TRANSPORT(domain = Domain.SEA, attack = 0, defense = 1, cost = 8),
-    SUBMARINE(
-        domain = Domain.SEA,
-        attack = 2,
-        defense = 2,
-        cost = 8,
-        targetDomain = Domain.SEA
-    ),
-    DESTROYER(domain = Domain.SEA, attack = 3, defense = 3, cost = 12),
-    AIRCRAFT_CARRIER(domain = Domain.SEA, attack = 1, defense = 3, cost = 16),
-    BATTLESHIP(domain = Domain.SEA, attack = 4, defense = 4, cost = 24, maxHp = 2);
-
-    val prettyName = name.split("_").joinToString(
+    val fullName = name.split("_").joinToString(
         separator = " ",
         transform = { it.toLowerCase().capitalize() }
     )
+
+    val shortName by lazy {
+        when (this) {
+            ANTIAIRCRAFT_GUN -> "AA Gun"
+            BOMBARDING_BATTLESHIP -> "Battleship"
+            BOMBARDING_DESTROYER -> "Destroyer"
+            else -> fullName
+        }
+    }
 
     /**
      * Determines the attack or defense value of this [UnitType] for the given attacking role, i.e.
@@ -123,4 +133,41 @@ enum class UnitType(
      *  unit and not [firstRoundOnly].
      */
     fun canInvade() = !firstRoundOnly && domain != Domain.AIR
+
+    /**
+     * Determines whether this [UnitType] can be used by an army with the given set of
+     *  [WeaponDevelopment]s.
+     */
+    fun hasRequiredWeaponDevelopments(weaponDevelopments: Set<WeaponDevelopment>): Boolean {
+        return when (this) {
+            BOMBARDING_DESTROYER ->
+                weaponDevelopments.contains(WeaponDevelopment.COMBINED_BOMBARDMENT)
+            else -> true
+        }
+    }
+
+    /**
+     * Determines whether this [UnitType] should be listed as able to attack in the given [Domain].
+     */
+    fun canAttackIn(domain: Domain): Boolean {
+        return when (this) {
+            UnitType.ANTIAIRCRAFT_GUN -> false
+            UnitType.FIGHTER -> true
+            UnitType.BOMBER -> true
+            else -> this.domain == domain
+        }
+    }
+
+    /**
+     * Determines whether this [UnitType] should be listed as able to defend in the given [Domain].
+     */
+    fun canDefendIn(domain: Domain): Boolean {
+        return when (this) {
+            UnitType.BOMBARDING_BATTLESHIP -> false
+            UnitType.BOMBARDING_DESTROYER -> false
+            UnitType.FIGHTER -> true
+            UnitType.BOMBER -> domain == Domain.LAND
+            else -> this.domain == domain
+        }
+    }
 }

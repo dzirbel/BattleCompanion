@@ -11,7 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:textColor="@color/text"
-        android:textStyle="bold"
+        android:textSize="16sp"
         app:layout_constraintBottom_toTopOf="@id/minusOne"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

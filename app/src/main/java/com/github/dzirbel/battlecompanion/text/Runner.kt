@@ -39,12 +39,12 @@ private const val N = 1_000_000
 fun main() {
     println("Attackers:")
     attackers.units.forEach { unitType, hps ->
-        println("  ${unitType.prettyName} : ${hps.count()} | ${hps.toString { "${it}hp" }}")
+        println("  ${unitType.fullName} : ${hps.count()} | ${hps.toString { "${it}hp" }}")
     }
 
     println("Defenders:")
     defenders.units.forEach { unitType, hps ->
-        println("  ${unitType.prettyName} : ${hps.count()} | ${hps.toString { "${it}hp" }}")
+        println("  ${unitType.fullName} : ${hps.count()} | ${hps.toString { "${it}hp" }}")
     }
 
     val board = Board(
