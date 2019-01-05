@@ -6,6 +6,7 @@
 
     <Button
         android:id="@+id/analysis"
+        style="@style/Button"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:text="@string/analysis_button"
@@ -14,30 +15,29 @@
 
     <Button
         android:id="@+id/roll"
+        style="@style/Button.Primary"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:text="@string/roll_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <RadioGroup
+    <Button
+        android:id="@+id/land"
+        style="@style/Button"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/roll">
+        android:text="@string/land"
+        app:layout_constraintStart_toEndOf="@id/roll"
+        app:layout_constraintEnd_toStartOf="@id/sea"/>
 
-        <RadioButton
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:checked="true"
-            android:text="@string/land" />
-
-        <RadioButton
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="@string/sea" />
-
-    </RadioGroup>
+    <Button
+        android:id="@+id/sea"
+        style="@style/Button"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:text="@string/sea"
+        app:layout_constraintStart_toEndOf="@id/land"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
 </android.support.constraint.ConstraintLayout>

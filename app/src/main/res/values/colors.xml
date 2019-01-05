@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#008577</color>
-    <color name="colorPrimaryDark">#00574B</color>
-    <color name="colorAccent">#D81B60</color>
+    <color name="primary">#12961f</color>
+
+    <color name="attacker">#163ee0</color>
+    <color name="defender">#af2105</color>
+
+    <color name="attacker_light">#88163ee0</color>
+    <color name="defender_light">#88af2105</color>
 </resources>

@@ -9,7 +9,7 @@
         style="@style/ArmyHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#0000FF"
+        android:background="@color/attacker"
         android:text="@string/attackers_header"
         app:layout_constraintBottom_toTopOf="@id/attackerUnits"
         app:layout_constraintTop_toTopOf="parent" />
@@ -18,7 +18,7 @@
         android:id="@+id/attackerUnits"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:background="#880000FF"
+        android:background="@color/attacker_light"
         app:layout_constraintBottom_toTopOf="@id/tools"
         app:layout_constraintTop_toBottomOf="@id/attackerHeader" />
 
@@ -34,7 +34,7 @@
         android:id="@+id/defenderUnits"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:background="#88FF0000"
+        android:background="@color/defender_light"
         app:layout_constraintBottom_toTopOf="@id/defenderHeader"
         app:layout_constraintTop_toBottomOf="@id/tools" />
 
@@ -43,7 +43,7 @@
         style="@style/ArmyHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#FF0000"
+        android:background="@color/defender"
         android:text="@string/defenders_header"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/defenderUnits" />
