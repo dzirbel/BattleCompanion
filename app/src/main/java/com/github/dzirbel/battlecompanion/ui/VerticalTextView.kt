@@ -20,10 +20,10 @@ class VerticalTextView(context: Context, attrs: AttributeSet) : TextView(context
 
         canvas.translate(measuredWidth.toFloat(), 0F)
         canvas.rotate(90F)
-
         canvas.translate(compoundPaddingLeft.toFloat(), extendedPaddingTop.toFloat())
 
         layout.draw(canvas)
+
         canvas.restore()
     }
 }
