@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary">#12961f</color>
+
+    <color name="primary">#02841a</color>
+    <color name="text">#F2F2F2</color>
 
     <color name="attacker">#163ee0</color>
     <color name="defender">#af2105</color>
 
     <color name="attacker_light">#88163ee0</color>
     <color name="defender_light">#88af2105</color>
+
 </resources>

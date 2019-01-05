@@ -22,22 +22,34 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <Button
-        android:id="@+id/land"
-        style="@style/Button"
+    <RadioGroup
+        android:id="@+id/domainGroup"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:text="@string/land"
-        app:layout_constraintStart_toEndOf="@id/roll"
-        app:layout_constraintEnd_toStartOf="@id/sea"/>
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/roll">
 
-    <Button
-        android:id="@+id/sea"
-        style="@style/Button"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:text="@string/sea"
-        app:layout_constraintStart_toEndOf="@id/land"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        <RadioButton
+            android:id="@+id/land"
+            style="@style/Button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:button="@null"
+            android:text="@string/land"
+            android:textColor="@color/radio_button_text" />
+
+        <RadioButton
+            android:id="@+id/sea"
+            style="@style/Button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:button="@null"
+            android:text="@string/sea"
+            android:textColor="@color/radio_button_text" />
+
+    </RadioGroup>
 
 </android.support.constraint.ConstraintLayout>

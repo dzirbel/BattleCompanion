@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity
 import com.github.dzirbel.battlecompanion.R
 import com.github.dzirbel.battlecompanion.core.Domain
 import kotlinx.android.synthetic.main.board_activity.*
+import kotlinx.android.synthetic.main.board_tools.*
 
 class BoardActivity : AppCompatActivity() {
 
@@ -15,7 +16,19 @@ class BoardActivity : AppCompatActivity() {
         attackerUnits.layoutManager = ColumnLayoutManager(this)
         defenderUnits.layoutManager = ColumnLayoutManager(this)
 
-        attackerUnits.adapter = UnitTypeAdapter(domains = setOf(Domain.LAND, Domain.AIR))
-        defenderUnits.adapter = UnitTypeAdapter(domains = setOf(Domain.LAND, Domain.AIR))
+        domainGroup.setOnCheckedChangeListener { _, checkedId ->
+            when (checkedId) {
+                R.id.land -> setDomains(setOf(Domain.LAND, Domain.AIR))
+                R.id.sea -> setDomains(setOf(Domain.SEA, Domain.AIR))
+                else -> throw IllegalArgumentException()
+            }
+        }
+
+        domainGroup.check(R.id.land)
+    }
+
+    private fun setDomains(domains: Set<Domain>) {
+        attackerUnits.adapter = UnitTypeAdapter(top = true, domains = domains)
+        defenderUnits.adapter = UnitTypeAdapter(top = false, domains = domains)
     }
 }
