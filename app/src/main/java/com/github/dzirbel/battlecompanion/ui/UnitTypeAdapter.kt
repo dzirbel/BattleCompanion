@@ -7,7 +7,10 @@ import com.github.dzirbel.battlecompanion.R
 import com.github.dzirbel.battlecompanion.core.Domain
 import com.github.dzirbel.battlecompanion.core.UnitType
 
-class UnitTypeAdapter(top: Boolean, domains: Set<Domain>) : RecyclerView.Adapter<UnitTypeViewHolder>() {
+class UnitTypeAdapter(
+    top: Boolean,
+    domains: Set<Domain>
+) : RecyclerView.Adapter<UnitTypeViewHolder>() {
 
     private val unitTypes = UnitType.values().filter { domains.contains(it.domain) }
     private val layout = if (top) R.layout.board_unit_top else R.layout.board_unit_bottom
