@@ -1,48 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingTop="10dp">
-
-    <com.github.dzirbel.battlecompanion.ui.VerticalTextView
-        android:id="@+id/unitName"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        android:textColor="@color/text"
-        android:textSize="16sp"
-        app:layout_constraintBottom_toTopOf="@id/minusOne"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="Infantry" />
+    android:orientation="vertical">
 
     <Button
         android:id="@+id/minusOne"
         style="@style/Button.Small"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/minus_one"
-        app:layout_constraintBottom_toTopOf="@id/plusOne"
-        app:layout_constraintTop_toBottomOf="@id/unitName" />
+        android:paddingTop="@dimen/space_normal"
+        android:text="@string/minus_one" />
+
+    <com.github.dzirbel.battlecompanion.ui.VerticalTextView
+        android:id="@+id/unitName"
+        style="@style/Text"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_gravity="center_horizontal"
+        android:padding="@dimen/space_small"
+        tools:text="Infantry" />
 
     <Button
         android:id="@+id/plusOne"
         style="@style/Button.Small"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/plus_one"
-        app:layout_constraintBottom_toTopOf="@id/unitCount"
-        app:layout_constraintTop_toBottomOf="@id/minusOne" />
+        android:text="@string/plus_one" />
 
     <Button
         android:id="@+id/unitCount"
         style="@style/Button.Small"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/plusOne"
+        android:paddingBottom="@dimen/space_normal"
         tools:text="3" />
 
-</android.support.constraint.ConstraintLayout>
+</LinearLayout>
