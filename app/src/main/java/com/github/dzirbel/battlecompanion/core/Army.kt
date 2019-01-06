@@ -2,6 +2,7 @@ package com.github.dzirbel.battlecompanion.core
 
 import com.github.dzirbel.battlecompanion.util.MultiSet
 import com.github.dzirbel.battlecompanion.util.Rational
+import com.github.dzirbel.battlecompanion.util.multiSetOf
 import java.util.EnumMap
 import kotlin.random.Random
 
@@ -37,7 +38,7 @@ data class Army(
             return Army(
                 units = units
                     .filterValues { it > 0 }
-                    .mapValues { (unitType, count) -> MultiSet(mapOf(unitType.maxHp to count)) },
+                    .mapValues { (unitType, count) -> multiSetOf(unitType.maxHp to count) },
                 isAttacking = isAttacking,
                 casualtyPicker = casualtyPicker,
                 weaponDevelopments = weaponDevelopments
@@ -79,6 +80,19 @@ data class Army(
             copy(units = units.filterKeys { !it.firstRoundOnly })
         } else {
             this
+        }
+    }
+
+    /**
+     * Returns a copy of this [Army] with the given number of the given [UnitType], all at their
+     *  [UnitType.maxHp].
+     * If [count] is zero or negative, all units of [unitType] will be removed.
+     */
+    fun withUnitCount(unitType: UnitType, count: Int): Army {
+        return if (count <= 0) {
+            copy(units = units.minus(unitType))
+        } else {
+            copy(units = units.plus(unitType to multiSetOf(unitType.maxHp to count)))
         }
     }
 

@@ -99,6 +99,29 @@ class ArmyTest {
     }
 
     @Test
+    fun testWithUnitCount() {
+        UnitType.values().forEach { unitType ->
+            assertEquals(Armies.empty, Armies.empty.withUnitCount(unitType, 0))
+            assertEquals(Armies.empty, Armies.empty.withUnitCount(unitType, -1))
+            assertEquals(Armies.empty, Armies.empty.withUnitCount(unitType, -5))
+
+            assertEquals(Armies.empty, Armies.fromUnits(unitType to 3).withUnitCount(unitType, 0))
+            assertEquals(Armies.empty, Armies.fromUnits(unitType to 3).withUnitCount(unitType, -1))
+            assertEquals(Armies.empty, Armies.fromUnits(unitType to 3).withUnitCount(unitType, -5))
+
+            assertEquals(
+                Armies.fromUnits(unitType to 2),
+                Armies.fromUnits(unitType to 4).withUnitCount(unitType, 2)
+            )
+
+            assertEquals(
+                Armies.fromUnits(unitType to 2),
+                Armies.empty.withUnitCount(unitType, 2)
+            )
+        }
+    }
+
+    @Test
     fun testRollHits() {
         Randoms.all.forEach { rand ->
             Armies.attackers.forEach { attackers ->
