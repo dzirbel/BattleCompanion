@@ -8,6 +8,7 @@ import com.github.dzirbel.battlecompanion.core.Board
 import com.github.dzirbel.battlecompanion.core.CasualtyPicker
 import com.github.dzirbel.battlecompanion.core.Domain
 import com.github.dzirbel.battlecompanion.core.UnitType
+import com.github.dzirbel.battlecompanion.core.WeaponDevelopment
 import kotlinx.android.synthetic.main.board_activity.*
 import kotlinx.android.synthetic.main.board_tools.*
 import kotlin.random.Random
@@ -52,6 +53,9 @@ class BoardActivity : AppCompatActivity() {
 
         roll.setOnClickListener { board = board.roll(Random) }
 
+        attackerHeader.setOnClickListener { showArmyDialog(isAttacking = true) }
+        defenderHeader.setOnClickListener { showArmyDialog(isAttacking = false) }
+
         domainGroup.setOnCheckedChangeListener { _, checkedId ->
             when (checkedId) {
                 R.id.land -> setUnitTypes(Domain.LAND)
@@ -75,6 +79,29 @@ class BoardActivity : AppCompatActivity() {
                 defenders = board.defenders.withUnitCount(unitType = unitType, count = count)
             )
         }
+    }
+
+    fun setWeaponDevelopments(weaponDevelopments: Set<WeaponDevelopment>, isAttacking: Boolean) {
+        board = if (isAttacking) {
+            board.copy(
+                attackers = board.attackers.copy(weaponDevelopments = weaponDevelopments)
+            )
+        } else {
+            board.copy(
+                defenders = board.defenders.copy(weaponDevelopments = weaponDevelopments)
+            )
+        }
+    }
+
+    private fun showArmyDialog(isAttacking: Boolean) {
+        val fragment = ArmyDialogFragment()
+        fragment.isAttacking = isAttacking
+        fragment.weaponDevelopments = if (isAttacking) {
+            board.attackers.weaponDevelopments
+        } else {
+            board.defenders.weaponDevelopments
+        }
+        fragment.show(supportFragmentManager, "attacker_army_dialog")
     }
 
     private fun setUnitTypes(domain: Domain) {

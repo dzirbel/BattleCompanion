@@ -7,5 +7,10 @@ enum class WeaponDevelopment {
     SUPER_SUBMARINES,
     LONG_RANGE_AIRCRAFT,
     COMBINED_BOMBARDMENT,
-    HEAVY_BOMBERS
+    HEAVY_BOMBERS;
+
+    val prettyName = name.split("_").joinToString(
+        separator = " ",
+        transform = { it.toLowerCase().capitalize() }
+    )
 }

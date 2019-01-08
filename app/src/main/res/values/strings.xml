@@ -1,8 +1,13 @@
 <resources>
     <string name="app_name">Battle Companion</string>
 
+    <string name="accept">Accept</string>
+    <string name="cancel">Cancel</string>
+
     <string name="attackers_header">Attackers</string>
     <string name="defenders_header">Defenders</string>
+
+    <string name="army_dialog_title">Army Title</string>
 
     <string name="analysis_button">Analysis</string>
     <string name="roll_button">Roll</string>
