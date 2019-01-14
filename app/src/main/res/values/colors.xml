@@ -2,11 +2,13 @@
 <resources>
 
     <color name="primary">#02841a</color>
+    <color name="background">#2a2a2a</color>
     <color name="text">#F2F2F2</color>
 
     <color name="attacker">#163ee0</color>
     <color name="defender">#af2105</color>
 
+    <color name="primary_light">#8802841a</color>
     <color name="attacker_light">#88163ee0</color>
     <color name="defender_light">#88af2105</color>
 

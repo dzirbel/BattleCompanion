@@ -31,7 +31,7 @@
     </style>
 
     <style name="Button.Primary" parent="Button">
-        <item name="android:background">@color/primary</item>
+        <item name="android:background">@drawable/primary_button_background</item>
     </style>
 
 </resources>

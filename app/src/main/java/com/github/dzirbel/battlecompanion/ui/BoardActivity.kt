@@ -36,6 +36,8 @@ class BoardActivity : AppCompatActivity() {
             field = value
             attackerAdapter.updateUnitCounts(board.attackers)
             defenderAdapter.updateUnitCounts(board.defenders)
+
+            roll.isEnabled = board.outcome == null
         }
 
     private var attackerAdapter = UnitTypeAdapter(isAttacking = true, unitTypes = emptyList())
