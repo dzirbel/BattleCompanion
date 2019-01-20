@@ -37,6 +37,17 @@ class BoardActivity : AppCompatActivity() {
             attackerAdapter.updateUnitCounts(board.attackers)
             defenderAdapter.updateUnitCounts(board.defenders)
 
+            attackerWeaponDevelopments.text = getString(
+                R.string.weapon_developments,
+                board.attackers.weaponDevelopments.size,
+                WeaponDevelopment.values().size
+            )
+            defenderWeaponDevelopments.text = getString(
+                R.string.weapon_developments,
+                board.defenders.weaponDevelopments.size,
+                WeaponDevelopment.values().size
+            )
+
             roll.isEnabled = board.outcome == null
         }
 
@@ -55,8 +66,12 @@ class BoardActivity : AppCompatActivity() {
 
         roll.setOnClickListener { board = board.roll(Random) }
 
-        attackerHeader.setOnClickListener { showArmyDialog(isAttacking = true) }
-        defenderHeader.setOnClickListener { showArmyDialog(isAttacking = false) }
+        attackerWeaponDevelopments.setOnClickListener {
+            showWeaponDevelopmentsDialog(isAttacking = true)
+        }
+        defenderWeaponDevelopments.setOnClickListener {
+            showWeaponDevelopmentsDialog(isAttacking = false)
+        }
 
         domainGroup.setOnCheckedChangeListener { _, checkedId ->
             when (checkedId) {
@@ -67,6 +82,8 @@ class BoardActivity : AppCompatActivity() {
         }
 
         domainGroup.check(R.id.land)
+
+        board = board       // invoke the board setter
     }
 
     fun getArmy(isAttacking: Boolean) = if (isAttacking) board.attackers else board.defenders
@@ -85,25 +102,19 @@ class BoardActivity : AppCompatActivity() {
 
     fun setWeaponDevelopments(weaponDevelopments: Set<WeaponDevelopment>, isAttacking: Boolean) {
         board = if (isAttacking) {
-            board.copy(
-                attackers = board.attackers.copy(weaponDevelopments = weaponDevelopments)
-            )
+            board.copy(attackers = board.attackers.copy(weaponDevelopments = weaponDevelopments))
         } else {
-            board.copy(
-                defenders = board.defenders.copy(weaponDevelopments = weaponDevelopments)
-            )
+            board.copy(defenders = board.defenders.copy(weaponDevelopments = weaponDevelopments))
         }
+
+        // TODO update unit types (because combined bombardment might have been toggled)
     }
 
-    private fun showArmyDialog(isAttacking: Boolean) {
-        val fragment = ArmyDialogFragment()
+    private fun showWeaponDevelopmentsDialog(isAttacking: Boolean) {
+        val fragment = WeaponDevelopmentsDialogFragment()
         fragment.isAttacking = isAttacking
-        fragment.weaponDevelopments = if (isAttacking) {
-            board.attackers.weaponDevelopments
-        } else {
-            board.defenders.weaponDevelopments
-        }
-        fragment.show(supportFragmentManager, "attacker_army_dialog")
+        fragment.weaponDevelopments = getArmy(isAttacking = isAttacking).weaponDevelopments
+        fragment.show(supportFragmentManager, "weapon_developments")
     }
 
     private fun setUnitTypes(domain: Domain) {

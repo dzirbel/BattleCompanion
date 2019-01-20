@@ -4,10 +4,13 @@
     <string name="accept">Accept</string>
     <string name="cancel">Cancel</string>
 
-    <string name="attackers_header">Attackers</string>
-    <string name="defenders_header">Defenders</string>
+    <string name="attackers_label">Attackers</string>
+    <string name="defenders_label">Defenders</string>
 
-    <string name="army_dialog_title">Army Title</string>
+    <string name="weapon_developments">%d/%d Techs</string>
+    <string name="weapon_developments_title">%s Weapon Developments</string>
+
+    <string name="casualty_picker">TODO</string>
 
     <string name="analysis_button">Analysis</string>
     <string name="roll_button">Roll</string>

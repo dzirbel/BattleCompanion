@@ -1,18 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background">
 
     <Button
-        android:id="@+id/attackerHeader"
+        android:id="@+id/attackerWeaponDevelopments"
         style="@style/Button"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:background="@color/attacker"
-        android:text="@string/attackers_header"
+        tools:text="0/6 Techs"
+        app:layout_constraintEnd_toStartOf="@id/attackerLabel"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/attackerLabel"
+        style="@style/Text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/attacker"
+        android:padding="@dimen/space_normal"
+        android:text="@string/attackers_label"
+        android:textAllCaps="true"
+        android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@id/attackerUnits"
+        app:layout_constraintStart_toEndOf="@id/attackerWeaponDevelopments"
+        app:layout_constraintEnd_toStartOf="@id/attackerCasualtyPicker"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/attackerCasualtyPicker"
+        style="@style/Button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/attacker"
+        android:text="@string/casualty_picker"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/attackerLabel"
         app:layout_constraintTop_toTopOf="parent" />
 
     <android.support.v7.widget.RecyclerView
@@ -21,7 +49,7 @@
         android:layout_height="0dp"
         android:background="@color/attacker_light"
         app:layout_constraintBottom_toTopOf="@id/tools"
-        app:layout_constraintTop_toBottomOf="@id/attackerHeader" />
+        app:layout_constraintTop_toBottomOf="@id/attackerLabel" />
 
     <include
         android:id="@+id/tools"
@@ -36,17 +64,44 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:background="@color/defender_light"
-        app:layout_constraintBottom_toTopOf="@id/defenderHeader"
+        app:layout_constraintBottom_toTopOf="@id/defenderLabel"
         app:layout_constraintTop_toBottomOf="@id/tools" />
 
-    <TextView
-        android:id="@+id/defenderHeader"
+    <Button
+        android:id="@+id/defenderWeaponDevelopments"
         style="@style/Button"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:background="@color/defender"
-        android:text="@string/defenders_header"
+        tools:text="0/6 Techs"
+        app:layout_constraintEnd_toStartOf="@id/defenderLabel"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <TextView
+        android:id="@+id/defenderLabel"
+        style="@style/Text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/defender"
+        android:padding="@dimen/space_normal"
+        android:text="@string/defenders_label"
+        android:textAllCaps="true"
+        android:textStyle="bold"
+        app:layout_constraintStart_toEndOf="@id/defenderWeaponDevelopments"
+        app:layout_constraintEnd_toStartOf="@id/defenderCasualtyPicker"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/defenderUnits" />
+        app:layout_constraintTop_toBottomOf="@id/defenderUnits"/>
+
+    <Button
+        android:id="@+id/defenderCasualtyPicker"
+        style="@style/Button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/defender"
+        android:text="@string/casualty_picker"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/defenderLabel"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </android.support.constraint.ConstraintLayout>

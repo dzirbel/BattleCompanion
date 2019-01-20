@@ -7,17 +7,24 @@ import android.support.v7.app.AlertDialog
 import com.github.dzirbel.battlecompanion.R
 import com.github.dzirbel.battlecompanion.core.WeaponDevelopment
 
-class ArmyDialogFragment : DialogFragment() {
+class WeaponDevelopmentsDialogFragment : DialogFragment() {
 
     var weaponDevelopments: Set<WeaponDevelopment> = setOf()
     var isAttacking: Boolean = true
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val boardActivity = activity as? BoardActivity ?: throw NullPointerException()
-        val builder = AlertDialog.Builder(boardActivity)
-        builder
-            .setTitle(R.string.army_dialog_title)
-            .setMultiChoiceItems(weaponDevelopmentNames, null) { _, position, isChecked ->
+        val checked = WeaponDevelopment.values()
+            .map { weaponDevelopments.contains(it) }
+            .toBooleanArray()
+        val title = getString(
+            R.string.weapon_developments_title,
+            getString(if (isAttacking) R.string.attackers_label else R.string.defenders_label)
+        )
+
+        return AlertDialog.Builder(boardActivity)
+            .setTitle(title)
+            .setMultiChoiceItems(weaponDevelopmentNames, checked) { _, position, isChecked ->
                 if (isChecked) {
                     weaponDevelopments += getWeaponDevelopmentByPosition(position)
                 } else {
@@ -30,9 +37,7 @@ class ArmyDialogFragment : DialogFragment() {
                     isAttacking = isAttacking
                 )
             }
-//            .setNegativeButton(R.string.cancel) { _, _ -> /* no-op */ }
-
-        return builder.create()
+            .create()
     }
 
     companion object {
